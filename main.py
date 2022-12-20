@@ -5,11 +5,7 @@ from src.controllers import auth as c_auth
 from src.controllers.analyse import Analyse
 # import utils as utl
 
-st.set_page_config(layout="wide", page_title='Projet d\'analyse de données',menu_items={
-'Get Help': 'https://www.extremelycoolapp.com/help',
-'Report a bug': "https://www.extremelycoolapp.com/bug",
-'About': "# This is a header. This is an *extremely* cool app!"
-})
+st.set_page_config(layout="wide", page_title='Projet d\'analyse de données')
 st.set_option('deprecation.showPyplotGlobalUse', False)
 # utl.inject_custom_css()
 # utl.navbar_component()
