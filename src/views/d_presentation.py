@@ -24,7 +24,9 @@ def load_view():
 
         st.subheader("Présentation des 5 premières lignes du dataset :")
         # df = pd.read_csv(r'C:\Backup\Documents_PERSO\Formations_Datarockstars\Projet DATA\DATA\hotel_bookings\hotel_bookings.csv')
-        df = Analyse().getDF().loc[:,"booking_id":"reservation_status_date"]
+        a = Analyse()
+        a.read()
+        df = a.getDF().loc[:,"booking_id":"reservation_status_date"]
         st.table(df.head(5))
 
         col_list  = df.columns.to_list()[1:]

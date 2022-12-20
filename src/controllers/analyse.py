@@ -11,8 +11,11 @@ class Analyse():
         self.df_dict = {} #datalake().getDataframe()
         self.datalake = Datalake()
 
+
     def load(self):
         self.datalake.load()
+
+    def read(self):
         self.df_dict = self.datalake.getDataframe()
         self.global_transform()
 
@@ -121,6 +124,7 @@ class Analyse():
             # ax.set_title('TOP 10 Utilisateurs ayant effectué le plus de requêtes')
             # for i in ax.containers:
             #     ax.bar_label(i,)    
+            fig = plt.figure()
             plt.title('Moyenne de fréquentation en répartition par mois pour l\'année ' + str(year) + "\n")
             plt.legend(handles=[red_patch])
             plt.xticks(rotation = 90)
@@ -135,4 +139,4 @@ class Analyse():
             plt.title("Moyenne de fréquentation en répartition par mois toutes années confondues\n")
             plt.legend(handles=[red_patch])
             plt.xticks(rotation = 90)
-            plt.show()
+            return plt

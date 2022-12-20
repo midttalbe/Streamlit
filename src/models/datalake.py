@@ -13,11 +13,7 @@ class Datalake():
         self.df = CSV().readCSV(self.pathDF)
         self.df_booked_date = CSV().readCSV(self.pathDFbooked)
         self.store_in_DB()
-        db = Database()
-        with db.db_con as conn:
-            df = pd.read_sql("SELECT * FROM Hotel_Booking",conn)
-            df_booked_date = pd.read_sql("SELECT * FROM Booked_Date",conn)
-        self.df_dict = { "df":df, "df_booked_date":df_booked_date }
+
 
     def store_in_DB(self):
         db = Database()
@@ -32,6 +28,11 @@ class Datalake():
                 db.commit()
 
     def getDataframe(self):
+        db = Database()
+        with db.db_con as conn:
+            df = pd.read_sql("SELECT * FROM Hotel_Booking",conn)
+            df_booked_date = pd.read_sql("SELECT * FROM Booked_Date",conn)
+        self.df_dict = { "df":df, "df_booked_date":df_booked_date }
         return self.df_dict
 
     

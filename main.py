@@ -17,7 +17,9 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 init = False
 if not init:
     # charge données
-    Analyse().load()
+    a = Analyse()
+    a.load()
+    print(a.df_dict)
     init = True
 
 def _max_width_():

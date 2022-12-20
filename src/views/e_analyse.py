@@ -25,7 +25,7 @@ def load_transformation():
     """)
 
 def load_analyse_1():
-    st.markdown("...")
+    pass
 
 def load_view():
     col_a,col_b,col_c = st.columns([1,4,1])
