@@ -5,15 +5,12 @@ from  src.controllers import auth as c_auth
 
 import utils as utl
 
-
-
-
 def load_sidebar():
 
     utl.inject_custom_css()
 
 
-    image = Image.open("src\images\image_booking.jpg")
+    image = Image.open("src/images/image_booking.jpg")
     username = c_auth.getUserName().capitalize()
 
     # st.markdown("""<div align="center" >""",unsafe_allow_html=True)

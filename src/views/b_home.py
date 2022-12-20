@@ -50,7 +50,7 @@ def load_que_peut_on_voir():
 def load_pourquoi_python():
     st.subheader("Pourquoi Python ?")
 
-    image = Image.open("src\images\logo_python.png")
+    image = Image.open("src/images/logo_python.png")
     st.image(image, width=100)
 
     st.markdown("""

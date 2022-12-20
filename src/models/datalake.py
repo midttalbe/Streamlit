@@ -4,8 +4,8 @@ import pandas as pd
 
 class Datalake():
     def __init__(self) -> None:
-        self.pathDF = "src\\assets\\hotel_bookings.csv"
-        self.pathDFbooked = "src\\assets\\df_booked_date.csv"
+        self.pathDF = "src/assets/hotel_bookings.csv"
+        self.pathDFbooked = "src/assets/df_booked_date.csv"
         self.sql_hotel_booking = "Hotel_Booking"
         self.sql_booked_date = "Booked_Date"
 

@@ -105,7 +105,7 @@ def _max_width_():
 
 def load_view():
 
-    image = Image.open("src\images\image_booking.jpg")
+    image = Image.open("src/images/image_booking.jpg")
 
     # Login
     col8, col7, col6 = st.columns([1,4,1])
