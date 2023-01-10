@@ -98,45 +98,41 @@ class Analyse():
         # Visualisation graphique #
         ###########################
 
-        list_year = [2015, 2016, 2017]
-        list_color = ['blue', 'orange', 'green']
+        dict_color = {0:"black",2015:"blue",2016:"orange",2017:"green"}
         highlight_color = 'red'
         highlight_label = 'Minimum'
+        color = dict_color[année]
 
         # Creating legend with color box
         red_patch = mpatches.Patch(color=highlight_color, label=highlight_label)
 
-        # Graphique Bar par années
-        for i in range(len(list_year)):
-            year = list_year[i]
-            color = list_color[i]
-            
-            df_graph = result_grouped_month_year[result_grouped_month_year['Year'] == year]
+        if année != 0:
+
+            # Graphique Bar par années
+            df_graph = result_grouped_month_year[result_grouped_month_year['Year'] == année]
             
             min_value = df_graph['total_client'].min()
             df_graph['Min in red'] = df_graph['total_client'] == min_value
             
-            # sns.catplot(data=df_graph,x='Month Name',y='total_client',kind='bar',hue='is_min',palette=[color,highlight_color],legend=False)
-            # sns.barplot(data=df_graph,x='Month Name',y='total_client',color=color)
+            fig, ax = plt.subplots(1,1,figsize=(6,4))
+
             sns.barplot(data=df_graph,x='Month Name',y='total_client',hue='Min in red',palette=[color,highlight_color],dodge=False)
 
-            # ax=plt.gca()
-            # ax.set_title('TOP 10 Utilisateurs ayant effectué le plus de requêtes')
-            # for i in ax.containers:
-            #     ax.bar_label(i,)    
-            fig = plt.figure()
-            plt.title('Moyenne de fréquentation en répartition par mois pour l\'année ' + str(year) + "\n")
+            plt.title('Moyenne de fréquentation en répartition par mois pour l\'année ' + str(année) + "\n")
             plt.legend(handles=[red_patch])
             plt.xticks(rotation = 90)
-            plt.show()
-            # break
-            
+            return fig
+
+        else:
             # Graphique Bar pour toutes les années
+            fig, ax = plt.subplots(1,1,figsize=(6,4))
+
             df_graph = result_grouped_month_year.groupby(["Month Number","Month Name"])["total_client"].mean().reset_index()
             min_value = df_graph["total_client"].min()
             df_graph["Min in red"] = df_graph["total_client"] == min_value
-            sns.barplot(data=df_graph,x='Month Name',y='total_client',hue='Min in red',palette=["black",highlight_color],dodge=False)
+            sns.barplot(data=df_graph,x='Month Name',y='total_client',hue='Min in red',palette=[color,highlight_color],dodge=False)
             plt.title("Moyenne de fréquentation en répartition par mois toutes années confondues\n")
             plt.legend(handles=[red_patch])
             plt.xticks(rotation = 90)
-            return plt
+
+            return fig

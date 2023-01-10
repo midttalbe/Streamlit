@@ -24,11 +24,14 @@ def load_transformation():
     - 
     """)
 
-def load_analyse_1():
-    pass
+def load_analyse_1(a:Analyse,année:int):
+    return a.analyse_1_1(année)
 
 def load_view():
     col_a,col_b,col_c = st.columns([1,4,1])
+    a = Analyse()
+    a.read()
+
     with col_b:
         side_bar.load_sidebar()
         
@@ -41,7 +44,10 @@ def load_view():
 
         st.subheader("L'analyse :")
         with st.expander("Le meilleur moment pour être au calme avec le moins d'affluence possible"):
-            load_analyse_1()
+            year = st.select_slider("Année ?", options=["All", 2015,2016, 2017])
+            if year == "All": year = 0
+            plt_graph = load_analyse_1(a, year)
+            st.pyplot(plt_graph)
 
         with st.expander("Le meilleur moment pour avoir le plus de diversité en terme de pays représenté"):
             st.markdown("...")
