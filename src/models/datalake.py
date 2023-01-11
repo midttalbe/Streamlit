@@ -9,20 +9,20 @@ class Datalake():
         self.sql_hotel_booking = "Hotel_Booking"
         self.sql_booked_date = "Booked_Date"
 
-    def load(self):
+    def load(self,forced_in_db:bool=False):
         self.df = CSV().readCSV(self.pathDF)
         self.df_booked_date = CSV().readCSV(self.pathDFbooked)
-        self.store_in_DB()
+        self.store_in_DB(forced_in_db)
 
 
-    def store_in_DB(self):
+    def store_in_DB(self,forced:bool=False):
         db = Database()
-        if(not db.table_exists(self.sql_hotel_booking)):
+        if(forced or not db.table_exists(self.sql_hotel_booking)):
             with db.db_con as conn:
                 self.df.to_sql(name=self.sql_hotel_booking,con= conn,if_exists="replace",index=False)
                 db.commit()
         
-        if(not db.table_exists(self.sql_booked_date)):
+        if(forced or not db.table_exists(self.sql_booked_date)):
             with db.db_con as conn:
                 self.df_booked_date.to_sql(name=self.sql_booked_date, con=conn,if_exists="replace",index=False)
                 db.commit()
@@ -36,3 +36,5 @@ class Datalake():
         return self.df_dict
 
     
+datalk = Datalake()
+datalk.load(True)

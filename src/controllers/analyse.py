@@ -12,8 +12,8 @@ class Analyse():
         self.datalake = Datalake()
 
 
-    def load(self):
-        self.datalake.load()
+    def load(self,forced:bool=False):
+        self.datalake.load(forced)
 
     def read(self):
         self.df_dict = self.datalake.getDataframe()
@@ -86,7 +86,7 @@ class Analyse():
     # def getData(self):
     #     return self.df 
 
-    # Analyse 1 : par mois et par années
+    # Analyse 1 - 2 : par mois et par années
     def analyse_1_1(self, année:int):
         ###########################
         # Préparation des données #
@@ -114,18 +114,20 @@ class Analyse():
             min_value = df_graph['total_client'].min()
             df_graph['Min in red'] = df_graph['total_client'] == min_value
             
-            fig, ax = plt.subplots(1,1,figsize=(6,4))
+            fig, ax = plt.subplots(1,1,figsize=(5,3))
 
             sns.barplot(data=df_graph,x='Month Name',y='total_client',hue='Min in red',palette=[color,highlight_color],dodge=False)
 
             plt.title('Moyenne de fréquentation en répartition par mois pour l\'année ' + str(année) + "\n")
             plt.legend(handles=[red_patch])
+            plt.xlabel("Mois")
+            plt.ylabel("Fréquentation client")
             plt.xticks(rotation = 90)
             return fig
 
         else:
             # Graphique Bar pour toutes les années
-            fig, ax = plt.subplots(1,1,figsize=(6,4))
+            fig, ax = plt.subplots(1,1,figsize=(5,3))
 
             df_graph = result_grouped_month_year.groupby(["Month Number","Month Name"])["total_client"].mean().reset_index()
             min_value = df_graph["total_client"].min()
@@ -133,6 +135,39 @@ class Analyse():
             sns.barplot(data=df_graph,x='Month Name',y='total_client',hue='Min in red',palette=[color,highlight_color],dodge=False)
             plt.title("Moyenne de fréquentation en répartition par mois toutes années confondues\n")
             plt.legend(handles=[red_patch])
+            plt.xlabel("Mois")
+            plt.ylabel("Fréquentation client")
             plt.xticks(rotation = 90)
 
             return fig
+
+    # Analyse 1 - 2 : Distribution par semestre et par mois toutes années confondues
+    def analyse_1_2(self,semestre):
+        ###########################
+        # Préparation des données #
+        ###########################
+        result_grouped = self.getDFresult_grouped()
+        result_grouped_month_year = result_grouped.groupby([result_grouped["Year"],result_grouped["Quarter"], result_grouped["Month Number"],result_grouped["Month Name"]])['total_client'].mean().reset_index()
+        ## Group by Quarter for all years
+        df_graph_box = result_grouped_month_year[['Quarter','Month Number','Month Name','total_client']]
+
+        ###########################
+        # Visualisation graphique #
+        ###########################
+
+        semesters = [[1, 2], [3, 4]]
+        semester = semesters[semestre]
+        df_graph_box = result_grouped_month_year[['Quarter','Month Number','Month Name','total_client']]
+        df_graph_box.sort_values(by='Month Number',inplace=True)
+        df_graph_box_sem = df_graph_box[df_graph_box["Quarter"].isin(semester)]
+        
+        sem = int(np.ceil(semester[0]/2))
+        fig, ax = plt.subplots(1,1,figsize=(6,4))
+        sns.boxplot(df_graph_box_sem,x='Month Name',y="total_client")
+
+        plt.xticks(rotation = 90)
+        plt.xlabel("Mois")
+        plt.ylabel("Fréquentation client")
+        plt.title("Distribution de fréquentation pour le semester n°" + str(sem) + " répartie par mois toutes années confondues")
+
+        return fig

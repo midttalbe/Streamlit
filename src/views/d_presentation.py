@@ -30,7 +30,7 @@ def load_view():
         st.table(df.head(5))
 
         col_list  = df.columns.to_list()[1:]
-        st.subheader("Veuillez selectionner une colonne à afficher")
+        st.subheader("Veuillez selectionner une colonne du jeu de données pour afficher sa distribution")
         option = st.selectbox('Veuillez selectionner une colonne pour afficher la distribution', col_list,label_visibility="collapsed")
         map_mois = {"January":["Janvier",1], "February":["Février",2], "March":["Mars",3], "April":["Avril",4], "May":["Mai",5], "June":["Juin",6]
                 ,"July":["Juillet",7], "August":["Août",8], "September":["Septembre",9], "October":["Octobre",10], "November":["Novembre",11], "December":["Décembre",12]}
