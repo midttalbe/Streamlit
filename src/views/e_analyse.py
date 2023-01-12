@@ -127,20 +127,24 @@ df_booked_date = pd.concat(df_booked.apply(proc, axis=1).tolist(), ignore_index=
         st.code("""
 df_booked_date["Year"] = df_booked_date.Date.dt.year
 df_booked_date["Quarter"] = df_booked_date.Date.dt.quarter
-df_booked_date["Month Name"] = df_booked_date.Date.dt.month_name()
+df_booked_date["Month Name"] = df_booked_date.Date.dt.month_name("fr")
 df_booked_date["Month Number"] = df_booked_date.Date.dt.month
 df_booked_date["Week Number"] = df_booked_date.Date.dt.week
 df_booked_date["Day of Month"] = df_booked_date.Date.dt.day
-df_booked_date["Day Name"] = df_booked_date.Date.dt.day_name()
+df_booked_date["Day Name"] = df_booked_date.Date.dt.day_name("fr")
 df_booked_date["Day Number"] = df_booked_date.Date.dt.day_of_week+1
 df_booked_date["Day Type"] = df_booked_date.Date.dt.day_of_week.apply(lambda x: "Fin de semaine (weekend)" if x > 5 else "Jour de semaine")    
     """)
 
+# Analyse 1 - 1 : analyse par mois et par années en graphique à bar
 def load_analyse_1_1(a:Analyse,année:int):
     return a.analyse_1_1(année)
-
+# Analyse 1 - 2 : analyse par semestre et par mois toutes années confondus en graphique boîte à moustache
 def load_analyse_1_2(a:Analyse,semestre:int):
     return a.analyse_1_2(semestre)
+# Analyse 1 - 3 : analyse par rapport au numéro du jour dans le mois ceci par années en graphique en camembert 
+def load_analyse_1_3(a:Analyse,année:int):
+    return a.analyse_1_3(année)
 
 def load_view():
     col_a,col_b,col_c = st.columns([1,4,1])
@@ -160,7 +164,7 @@ def load_view():
             load_transformation()
 
         with tab2:
-            st.subheader("L'analyse")
+            st.subheader("L'analyse :")
             with st.expander("Le meilleur moment pour être au calme avec le moins d'affluence possible"):
                 choix_options = ["Par mois et par années - Graphique à Bar",
                                 "Par semestre et par mois toutes années confondus - Graphique en Boîte à moustache",
@@ -235,7 +239,7 @@ Ici, on prend le total client brut par jour pour que le graphique puisse calcule
 
 On a ici deux graphiques boites à moustache, le premier represente le 1er semestre et le deuxième represente le 2eme semestre.<br>
 
-Sur la graphique representant le premier semestre, on voit se dégager une tendance montante depuis le début du premier semestre vers la fin du premier semestre.<br>
+Sur le graphique representant le premier semestre, on voit se dégager une tendance montante depuis le début du premier semestre vers la fin du premier semestre.<br>
 Le minimum se situe ici en janvier. Ce qui vient confirmer l'analyse des graphique à bar.<br>
 Pour janvier, on a un minimum à environ 300 et un maximum à presque 600.<br>
 La médiane se situe un peu en dessous de 500.<br>
@@ -250,6 +254,53 @@ On voit que **le minimum se situe bien en Janvier** ce qui vient corroboré nos 
 
                 elif choix == choix_dict[3]:
                     st.markdown(choix_dict[3])
+                    year = st.select_slider("Année ?", options=[2015,2016, 2017,"Toutes années"],label_visibility="visible")
+                    if year == "Toutes années": year = 0
+
+                    # Calcul des graphiques
+                    plt_graph = load_analyse_1_3(a, year)
+
+                    # Affichage des graphiques
+                    st.pyplot(plt_graph)
+
+                    # Affichage Methode de calcul
+                    st.markdown("""
+                    **Méthode de calcul :**<br>
+
+Ici, la fréquentation est calculé en 3 étapes :<br>
+ **Etape 1 :** Somme(Nombre de client) par jour<br>
+ **Etape 2 :** Création de catégorie "groupement de jours" selon le numéro du jour dans le mois :<br>
+            -> "01 - 05" : inclus les jours 1, 2, 3, 4 et 5<br>
+            -> "06 - 10" : inclus les jours 6, 7, 8, 9 et 10<br>
+            -> "11 - 15" : inclus les jours 11, 12, 13, 14 et 15<br>
+            -> "16 - 20" : inclus les jours 16, 17, 18, 19 et 20<br>
+            -> "21 - 25" : inclus les jours 21, 22, 23, 24 et 25<br>
+            -> "> 25"    : inclus tous les jours > 25<br>
+
+ **Etape 3 :** Moyenne(Somme(Nombre de client) par jour) par "groupement de jours"<br>
+                    """,unsafe_allow_html=True)
+
+                    # Affichage Texte d'analyse
+                    st.markdown("""
+                    **Analyse des grapqhiques :**<br>
+
+On a ici 4 graphiques camemberts.<br>
+Les 3 premiers representent les années 2015, 2016 et 2017.<br>
+Le dernier représente toutes les années.<br>
+Sur chacun de ces graphiques, le minimum a été mis en evidence et a été détaché du reste du groupe.<br>
+
+Sur l'année 2015, le minimum de fréquentation se situe sur les numéros de jour de 1 à 5.<br>
+Sur les années 2016 et 2017, le minimum de fréquentation se situe sur les numéros de jour > 25.<br>
+On voit ici que l'on arrive pas dégager une réelle tendance.<br>
+
+Sur le dernier graphique representant toutes les années, le minimum se situe également sur les jours > 25.<br>
+On remarque cependant que la différence n'est pas enorme par rapport aux autres groupement de jours.<br>
+
+On peut en conclure que la fréquentation reste equilibré quel que soit le numéro de jour dans le mois.<br>
+Si l'on avait pu avoir un jeu données plus conséquent, on aurait pu eventuellement y remarquer une tendance particulière.<br>
+                    """,unsafe_allow_html=True)
+
+
 
                 else:
                     st.markdown(choix_dict[4])

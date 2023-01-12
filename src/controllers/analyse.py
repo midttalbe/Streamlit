@@ -86,7 +86,7 @@ class Analyse():
     # def getData(self):
     #     return self.df 
 
-    # Analyse 1 - 2 : par mois et par années
+    # Analyse 1 - 1 : par mois et par années
     def analyse_1_1(self, année:int):
         ###########################
         # Préparation des données #
@@ -142,7 +142,7 @@ class Analyse():
             return fig
 
     # Analyse 1 - 2 : Distribution par semestre et par mois toutes années confondues
-    def analyse_1_2(self,semestre):
+    def analyse_1_2(self,semestre:int):
         ###########################
         # Préparation des données #
         ###########################
@@ -171,3 +171,63 @@ class Analyse():
         plt.title("Distribution de fréquentation pour le semester n°" + str(sem) + " répartie par mois toutes années confondues")
 
         return fig
+
+    # Analyse 1 - 3 : Par rapport au numéro du jour dans le mois par années - Graphique en Camember
+    def analyse_1_3(self, année:int):
+        ###########################
+        # Préparation des données #
+        ###########################
+
+        explode_distance = 0.3
+
+        def cutDayOfMonth(daynum):
+            if daynum <= 5: return '01-05'
+            elif daynum <= 10: return '06-10'
+            elif daynum <= 15: return '11-15'
+            elif daynum <= 20: return '16-20'
+            elif daynum <= 25: return '21-25'
+            else: return '> 25'
+
+        result_grouped = self.getDFresult_grouped()
+
+        result_grouped_day_of_month = result_grouped.groupby([result_grouped["Year"],result_grouped["Day of Month"]])['total_client'].sum().reset_index()
+        result_grouped_day_of_month['grpDay'] = result_grouped_day_of_month['Day of Month'].apply(cutDayOfMonth)
+        result_grouped_day_of_month = result_grouped_day_of_month.groupby(['Year','grpDay'])['total_client'].mean().rename('total_client_mean').reset_index()
+        result_grouped_day_of_month['rank'] = result_grouped_day_of_month.groupby(['Year'])['total_client_mean'].rank()
+
+        ###########################
+        # Visualisation graphique #
+        ###########################
+
+        if année != 0:
+            # Graphique Pie Chart par année
+            year = année
+            
+            df_graph_pie_day_of_month = result_grouped_day_of_month[result_grouped_day_of_month['Year'] == year]
+            rank_list = df_graph_pie_day_of_month['rank']
+            f = lambda x : explode_distance if x == 1 else 0.05
+            explode_list = list(map(f,rank_list)) 
+            
+            fig, ax = plt.subplots(1,1,figsize=(5,5))
+
+            plt.pie(df_graph_pie_day_of_month['total_client_mean'],labels=df_graph_pie_day_of_month['grpDay'],autopct='%1.0f%%',explode=explode_list,shadow = True)
+            plt.title("Moyenne de fréquentation par rapport au numéro du jour dans le mois pour l'année " + str(year) + "\n")
+            plt.legend(title="Numéro du jour",bbox_to_anchor=(0,0.7))
+            
+            return fig
+
+        else:
+            # Graphique Pie Chart toutes années 
+            df_graph_pie_day_of_month = result_grouped_day_of_month.groupby("grpDay")["total_client_mean"].mean().reset_index()
+            df_graph_pie_day_of_month['rank'] = df_graph_pie_day_of_month['total_client_mean'].rank()
+            rank_list = df_graph_pie_day_of_month['rank']
+            f = lambda x : explode_distance if x == 1 else 0.05
+            explode_list = list(map(f,rank_list)) 
+
+            fig, ax = plt.subplots(1,1,figsize=(5,5))
+
+            plt.pie(df_graph_pie_day_of_month['total_client_mean'],labels=df_graph_pie_day_of_month['grpDay'],autopct='%1.0f%%',explode=explode_list,shadow = True)
+            plt.title("Moyenne de fréquentation par rapport au numéro du jour dans le mois toutes années confondues\n")
+            plt.legend(title="Numéro du jour",bbox_to_anchor=(0,0.7))
+
+            return fig
