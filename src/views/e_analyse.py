@@ -157,6 +157,8 @@ def load_view():
         st.title("Analyse du dataset")
         load_problematique()
 
+        select_slider_list_year = 2015,2016, 2017,"Toutes années"
+
         tab1, tab2 = st.tabs(["La transformation de données","L'analyse"])
         with tab1:
             st.subheader("La transformation de données")
@@ -177,7 +179,7 @@ def load_view():
                 choix = st.selectbox("Choisissez votre analyse :",options=choix_options,index=1)
                 
                 if choix == choix_dict[1]:
-                    year = st.select_slider("Année ?", options=[2015,2016, 2017,"Toutes années"],label_visibility="visible")
+                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible")
                     if year == "Toutes années": year = 0
                     plt_graph = load_analyse_1_1(a, year)
                     st.pyplot(plt_graph)
@@ -254,7 +256,7 @@ On voit que **le minimum se situe bien en Janvier** ce qui vient corroboré nos 
 
                 elif choix == choix_dict[3]:
                     st.markdown(choix_dict[3])
-                    year = st.select_slider("Année ?", options=[2015,2016, 2017,"Toutes années"],label_visibility="visible")
+                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible")
                     if year == "Toutes années": year = 0
 
                     # Calcul des graphiques
