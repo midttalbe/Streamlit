@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn as sns
 import numpy as np
+import squarify as sqry
 
 class Analyse():
 
@@ -230,4 +231,46 @@ class Analyse():
             plt.title("Moyenne de fréquentation par rapport au numéro du jour dans le mois toutes années confondues\n")
             plt.legend(title="Numéro du jour",bbox_to_anchor=(0,0.7))
 
+            return fig
+
+    # Analyse 1 - 4 : Par rapport au jour de la semaine pour toutes les années - Grapqhique en Cluster
+    def analyse_1_4(self,type_de_graph:str):
+        ###########################
+        # Préparation des données #
+        ###########################
+
+        result_grouped = self.getDFresult_grouped()
+        explode_distance = 0.3
+
+        # Par rapport au jour de la semaine 
+        result_grouped_day_of_week = result_grouped.groupby([result_grouped["Year"],result_grouped["Week Number"],result_grouped["Day Type"],result_grouped["Day Number"], result_grouped["Day Name"]])["total_client"].sum().reset_index()
+
+        if type_de_graph == "CLUSTER":
+            #############################
+            # Visualisation graphique 1 #
+            ############################# 
+
+            fig, ax = plt.subplots(1,1,figsize=(6,3))
+
+            df_graph_square = result_grouped_day_of_week.groupby('Day Type')['total_client'].mean().reset_index()
+            sqry.plot(sizes=df_graph_square['total_client'],label=df_graph_square['Day Type'],alpha=0.7,pad=1,color=sns.color_palette("Spectral",2))
+
+            return fig
+
+        else:
+            #############################
+            # Visualisation graphique 2 #
+            ############################# 
+
+            df_graph_pie_day_of_week = result_grouped_day_of_week.groupby(["Day Number","Day Name"])["total_client"].mean().reset_index()
+            df_graph_pie_day_of_week['rank'] = df_graph_pie_day_of_week["total_client"].rank()
+            rank_list = df_graph_pie_day_of_week['rank']
+            f = lambda x : explode_distance if x == 1 else 0.05
+            explode_list = list(map(f,rank_list)) 
+
+            fig, ax = plt.subplots(1,1,figsize=(4,4))
+
+            plt.title("Moyenne de fréquentation par rapport au jour de la semaine toutes années confondues\n\n")
+            plt.pie(df_graph_pie_day_of_week["total_client"],labels=df_graph_pie_day_of_week["Day Name"],autopct='%1.0f%%',explode=explode_list,shadow = True)       
+            
             return fig

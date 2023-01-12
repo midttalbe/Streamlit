@@ -145,6 +145,9 @@ def load_analyse_1_2(a:Analyse,semestre:int):
 # Analyse 1 - 3 : analyse par rapport au numéro du jour dans le mois ceci par années en graphique en camembert 
 def load_analyse_1_3(a:Analyse,année:int):
     return a.analyse_1_3(année)
+# Analyse 1 - 4 : analyse par rapport au type de jour (Week end / Jour de semaine) toutes années confondus en graphique cluster
+def load_analyse_1_4(a:Analyse,graph_type:str):
+    return a.analyse_1_4(graph_type)
 
 def load_view():
     col_a,col_b,col_c = st.columns([1,4,1])
@@ -171,7 +174,7 @@ def load_view():
                 choix_options = ["Par mois et par années - Graphique à Bar",
                                 "Par semestre et par mois toutes années confondus - Graphique en Boîte à moustache",
                                 "Par rapport au numéro du jour dans le mois par années - Graphique en Camember",
-                                "Par rapport au jour de la semaine pour toutes les années - Grapqhique en Cluster"
+                                "Par rapport au jour de la semaine pour toutes les années - Graphique en Cluster"
                                 ]
                 choix_index = [1,2,3,4]
                 choix_dict = dict(zip(choix_index,choix_options))
@@ -302,10 +305,55 @@ On peut en conclure que la fréquentation reste equilibré quel que soit le num�
 Si l'on avait pu avoir un jeu données plus conséquent, on aurait pu eventuellement y remarquer une tendance particulière.<br>
                     """,unsafe_allow_html=True)
 
-
-
                 else:
                     st.markdown(choix_dict[4])
+                    choix_options = ["Par type de jour - Weekend / Jour de la semaine",
+                                    "Par jour de la semaine : Lundi, Mardi..."
+                                    ]
+                    choix_index = ["CLUSTER","PIE"]
+                    choix_dict = dict(zip(choix_options,choix_index))
+
+                    choix = st.selectbox("Choisissez le périmètre de l'analyse :",options=choix_options,index=1)
+
+                    # Calcul du graphique 
+                    plt_graph = load_analyse_1_4(a, choix_dict[choix])
+
+                    # Affichage du graphique
+                    st.pyplot(plt_graph)
+
+                    # Affichage Méthode de calcul
+                    st.markdown("""
+                        **Méthode de calcul :** <br>
+
+Ici, la moyenne de fréquentation a été calculé en deux étapes :<br>
+    - Etape 1 : Somme(Nombre de client) par semaines et par années<br>
+    - Etape 2 : Moyenne(Somme(Nombre de client) par semaines et par années) par jour de la semaine<br>
+                        """,unsafe_allow_html=True)
+
+                    if choix_dict[choix] == "CLUSTER":
+
+                        # Affichage Texte analyse
+                        st.markdown("""
+                        **Analyse du graphique cluster :**<br>
+
+Ici, on a une representation sous forme de cluster.<br>
+La répartition est sur le type de jour "Jour de la semaine" ou bien "Fin de semaine".<br>
+On voit ici que la réparation est equilibré en 50/50.<br>
+
+                        """,unsafe_allow_html=True)
+                    else:
+                        # Affichage Texte analyse
+                        st.markdown("""
+                        **Analyse du graphique camember :**<br>
+
+Ici, on a une répartition de la fréquentation par rapport au jour de la semaine.<br>
+Le minimum a été mis en evidence et a été séparé des autres jours de la semaine.<br>
+Le minimum se situe à Mardi avec une valeur de 13%.<br>
+
+La différence par rapport aux autres jours de la semaine est minime.
+
+                        """,unsafe_allow_html=True)               
+
 
             with st.expander("Le meilleur moment pour avoir le plus de diversité en terme de pays représenté"):
                 st.markdown("...")
