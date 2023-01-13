@@ -148,6 +148,12 @@ def load_analyse_1_3(a:Analyse,année:int):
 # Analyse 1 - 4 : analyse par rapport au type de jour (Week end / Jour de semaine) toutes années confondus en graphique cluster
 def load_analyse_1_4(a:Analyse,graph_type:str):
     return a.analyse_1_4(graph_type)
+# Analyse 2 - 1 : distribution de la diversité des pays par mois et par années
+def load_analyse_2_1(a:Analyse,année:int):
+    return a.analyse_2_1(année)
+# Analyse 2 - 2 : top 3 des pays les plus representé selon le mois et l'année
+def load_analyse_2_2(a:Analyse, année:int):
+    return a.analyse_2_2(année)
 
 def load_view():
     col_a,col_b,col_c = st.columns([1,4,1])
@@ -170,7 +176,7 @@ def load_view():
 
         with tab2:
             st.subheader("L'analyse :")
-            with st.expander("Le meilleur moment pour être au calme avec le moins d'affluence possible"):
+            with st.expander("📅 - **1) Le meilleur moment pour être au calme avec le moins d'affluence possible**"):
                 choix_options = ["Par mois et par années - Graphique à Bar",
                                 "Par semestre et par mois toutes années confondus - Graphique en Boîte à moustache",
                                 "Par rapport au numéro du jour dans le mois par années - Graphique en Camember",
@@ -179,10 +185,18 @@ def load_view():
                 choix_index = [1,2,3,4]
                 choix_dict = dict(zip(choix_index,choix_options))
 
+                st.markdown("""
+                #### Le but de cette analyse est de pouvoir dégager une tendance temporelle via différent angle de vue : <br>
+a) Fréquentation par rapport au mois et à l'année <br>
+b) Distribution par rapport au semestre et au mois <br>
+c) Fréquentation par rapport au numéro du jour dans le mois <br>
+d) Fréquentaton par rapport au jour de la semaine
+                """,unsafe_allow_html=True)
+
                 choix = st.selectbox("Choisissez votre analyse :",options=choix_options,index=1)
                 
                 if choix == choix_dict[1]:
-                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible")
+                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_1_1")
                     if year == "Toutes années": year = 0
                     plt_graph = load_analyse_1_1(a, year)
                     st.pyplot(plt_graph)
@@ -259,7 +273,7 @@ On voit que **le minimum se situe bien en Janvier** ce qui vient corroboré nos 
 
                 elif choix == choix_dict[3]:
                     st.markdown(choix_dict[3])
-                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible")
+                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_1_3")
                     if year == "Toutes années": year = 0
 
                     # Calcul des graphiques
@@ -354,15 +368,111 @@ La différence par rapport aux autres jours de la semaine est minime.
 
                         """,unsafe_allow_html=True)               
 
+            st.markdown("""
+            ### Conclusion des analyses de fréquentation par rapport à la période :<br>
 
-            with st.expander("Le meilleur moment pour avoir le plus de diversité en terme de pays représenté"):
+On a pu voir d'après les analyses précedentes et les differents point de vue temporel une tendance se degager sur la moyenne de fréquentation journalière.<br>
+
+Le meilleur mois pour une faible fréquentation se situe en Janvier.<br>
+
+Pour le jour dans le mois, ce sont les jours supérieur à 25 qui enregistrent le moins de fréquentation. <br>
+Cependant la différence reste faible par rapport aux  autres jours dans le mois.<br>
+
+En ce qui concerne le jour de la semaine, c'est le Mardi qui est le plus faible en fréquentation.<br>
+La répartition "Jour de la semaine" / "Fin de semaine" est plutôt equilibré 50/50.
+
+            """,unsafe_allow_html=True)
+
+            with st.expander("🌍 - **2) Le meilleur moment pour avoir le plus de diversité en terme de pays représenté**"):
+                st.markdown("""
+                ### Le but de cette analyse est de pouvoir :<br>
+a) Identifier le mois de l'année dans lequel on a le plus de diversité de pays<br>
+b) Identifier le top 3 des pays les plus representés selon le mois de l'année<br>
+
+Par diversité, on entend le moment où l'on a le plus de pays différents representés dans le mois.<br>
+                """,unsafe_allow_html=True)
+
+                choix_options = ["Diversité des pays par mois et par années",
+                                "TOP 3 des pays les plus representés selon le mois de l'année"
+                                    ]
+                choix_index = ["DISTRIBUTION","TOP"]
+                choix_dict = dict(zip(choix_options,choix_index))
+
+                choix = st.selectbox("Choisissez le perimètre d'analyse",options=choix_options)
+
+                year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_2")
+                if year == "Toutes années": year = 0
+
+                if choix_dict[choix] == "DISTRIBUTION":
+                    # Calcul du graphique
+                    plt_graph = load_analyse_2_1(a,year)
+
+                    # Affichage du graphique
+                    st.pyplot(plt_graph)
+
+                    # Affichage Methode de calcul
+                    st.markdown("""
+                    **Méthode de calcul :**<br>
+
+Le nombre de pays unique est calculé selon cette methode :<br>
+ Nb Pays Unique = Count Distinct(Pays) pas années et par mois<br>
+                    """,unsafe_allow_html=True)
+
+                    # Affichage Texte analyse
+                    st.markdown("""
+                    **Analyse des graphiques :**<br>
+
+Les 3 premiers graphiques ci-dessus representent le nombre de pays unique par mois et pas années.<br>
+Sur chacun de ces 3 graphiques le maximum a été mis en evidence en rouge.<br>
+
+Pour l'année 2015, on a un maximum sur le mois d'Octobre.<br>
+Pour l'année 2016, le maximum se situe en Novembre.<br>
+Enfin pour l'année 2017, le maximum se situe en Avril.<br>
+
+Le dernier grapqhique (en noir) represente le nombre de pays unique representé par mois pour toutes les années.<br>
+Le maximum se situe en Juin. Les mois d'Avril, Mai, Octobre et Novembre se rapproche du maximum.<br>
+
+                    """,unsafe_allow_html=True)
+
+                else:
+                    # Calcul du graphique
+                    plt_graph = load_analyse_2_2(a,year)
+                    
+                    # Affichage du graphique
+                    st.pyplot(plt_graph)
+
+                    # Affichage Methode de calcul
+                    st.markdown("""
+                    **Méthode de calcul :**<br>
+
+Le calcul de la moyenne de fréquentation par pays est effectué en 2 etapes :<br>
+ Etape 1 : Somme(Nombre de client) par années, par pays, par mois et par jour<br>
+ Etape 2 : Moyenne(Résultat Etape 1) par année, pays et mois<br>
+                    """,unsafe_allow_html=True)
+
+                    # Affichage Texte analyse
+                    st.markdown("""
+                    **Analyse des graphiques :**<br>
+Les graphiques ci-dessus representent la moyenne de fréquentation journaliéré par rapport au pays d'origine du client.<br>
+Les 3 premieres graphiques representent les années 2015, 2016 et 2017 découpés par mois.<br>
+
+Sur l'année 2015, les 4 pays les plus representatifs sont la France (FRA), l'Espagne (ESP), le Portugal (PRT) et l'Angleterre (GBR).<br>
+On remarque ici un net domination du Portugal sur tous les mois.<br>
+
+Pour l'année 2016, les 5 pays les plus representatifs sont la France (FRA), l'Espagne (ESP), le Portugal (PRT), l'Angleterre (GBR) et l'Allemagne (DEU).<br>
+On remarque ici une nette domination du Portugal suivi de l'Angleterre et enfin de la France.<br>
+
+Enfin pour l'année 2017, les 5 pays les plus representatifs la France (FRA), le Portugal (PRT), l'Angleterre (GBR), l'Allemagne (DEU) et la Suède (SWE).<br>
+Comme sur l'année 2016, on a une nette domination du Portugal suivi de l'Angleterre et enfin de la France. <br>
+
+Sur le graphique final, on a une moyenne toutes années confondues de la fréquentation journalière par pays.<br>
+On voit encore ici une forte domination du Portugal, suivi de l'Angleterre et de la France.<br>
+                    """,unsafe_allow_html=True)
+
+            with st.expander("👨‍👩‍👧‍👦 - **3) Le meilleur moment pour les voyages selon que l'on séjourne avec des enfants ou sans enfants**"):
                 st.markdown("...")
 
 
-            with st.expander("Le meilleur moment pour les voyages selon que l'on séjourne avec des enfants ou sans enfants"):
-                st.markdown("...")
-
-
-            with st.expander("Le meilleur moment pour bénéficier d'un sur-classement de type de chambre ou bien en terme de prix attractif "):
+            with st.expander("💳 - **4) Le meilleur moment pour bénéficier d'un sur-classement de type de chambre ou bien en terme de prix attractif**"):
                 st.markdown("...")
 

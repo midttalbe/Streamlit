@@ -35,6 +35,3 @@ class Datalake():
         self.df_dict = { "df":df, "df_booked_date":df_booked_date }
         return self.df_dict
 
-    
-datalk = Datalake()
-datalk.load(True)

@@ -29,6 +29,9 @@ class Analyse():
     def getDFresult_grouped(self):
         return self.df_dict["result_grouped"]
         
+    def getDFresult_country(self):
+        return self.df_dict["result_country"]
+
     def global_transform(self):
         df = self.getDF()
         df.insert(0,'booking_id',df.reset_index().index + 1)
@@ -83,6 +86,11 @@ class Analyse():
 
         # Ajoute result_grouped dans le dictionnaire de DF
         self.df_dict["result_grouped"] = result_grouped
+
+        # Pour les analyses 2
+        # Récupère les colonnes country et nombre de client
+        result_country = pd.merge(df_booked_date,df[['booking_id','country','total_client','stays_total']],on='booking_id')     
+        self.df_dict["result_country"] = result_country
 
     # def getData(self):
     #     return self.df 
@@ -273,4 +281,136 @@ class Analyse():
             plt.title("Moyenne de fréquentation par rapport au jour de la semaine toutes années confondues\n\n")
             plt.pie(df_graph_pie_day_of_week["total_client"],labels=df_graph_pie_day_of_week["Day Name"],autopct='%1.0f%%',explode=explode_list,shadow = True)       
             
+            return fig
+
+
+    # Analyse 2 - 1 : Distribution du nombre de pays representé par mois et par année
+    def analyse_2_1(self,année:int):
+        ###########################
+        # Préparation des données #
+        ###########################
+
+        # Récupère les colonnes country et nombre de client
+        result_country = self.getDFresult_country()
+        result_country_grouped_year_month = result_country.groupby([result_country["Year"],result_country["Month Number"],result_country["Month Name"]])['country'].nunique().rename('Nb Pays Unique').reset_index()
+
+        ###########################
+        # Visualisation graphique #
+        ###########################
+
+        highlight_label = "Maximum"
+        dict_color = {0:"black",2015:"blue",2016:"orange",2017:"green"}
+        highlight_color = 'red'
+        color = dict_color[année]
+
+        # Creating legend with color box
+        red_patch = mpatches.Patch(color=highlight_color, label=highlight_label)
+
+        # Counting nombre de country unique par année et par mois
+        year = année
+
+        if year != 0:
+            
+            df_graph_country = result_country_grouped_year_month[result_country_grouped_year_month["Year"] == year]
+            max_value = df_graph_country["Nb Pays Unique"].max()
+            df_graph_country["Max in red"] = df_graph_country["Nb Pays Unique"] == max_value
+
+            fig, ax = plt.subplots(1,1,figsize=(5,3))
+
+            sns.barplot(data=df_graph_country,x="Month Name",y="Nb Pays Unique",dodge=False,hue="Max in red",palette=[color, highlight_color])
+            plt.title("Nombre total de pays uniques representés par mois pour l'année " + str(year))
+            plt.legend(handles=[red_patch])
+            plt.xticks(rotation = 90)
+            ax.set_xlabel("Mois")
+            return fig
+
+        else:
+            # Graphique Bar pour toutes les années
+            df_graph_country = result_country_grouped_year_month.groupby(["Month Number","Month Name"])["Nb Pays Unique"].mean().reset_index()
+            max_value = df_graph_country["Nb Pays Unique"].max()
+            df_graph_country["Max in red"] = df_graph_country["Nb Pays Unique"] == max_value
+
+            fig, ax = plt.subplots(1,1,figsize=(5,3))
+
+            sns.barplot(data=df_graph_country,x="Month Name",y="Nb Pays Unique",dodge=False,hue="Max in red",palette=["black", highlight_color])
+            plt.title("Nombre total de pays uniques representés par mois toutes années confondues\n")
+            plt.legend(handles=[red_patch])
+            plt.xticks(rotation = 90)
+            ax.set_xlabel("Mois")
+
+            return fig
+
+
+    # Analyse 2 - 2 : TOP 3 des pays les plus representés selon le mois de l'années
+    def analyse_2_2(self, année:int):
+        ###########################
+        # Préparation des données #
+        ###########################
+
+        # Most represented country for each month of year
+        result_country = self.getDFresult_country()
+        result_country_grouped = result_country.groupby(["Year","country","Month Number","Month Name","Day of Month"])['total_client'].sum().rename("total_client_sum").reset_index()
+        result_country_grouped = result_country_grouped.groupby(['Year',"country","Month Number","Month Name"])['total_client_sum'].mean().rename('total_client_mean').reset_index()
+
+        # Création de la palette de couleur pour chaque pays top 3 de l'année
+        top = 3
+        country_top_list = []
+        list_year = [2015, 2016, 2017]
+        color_list = ["blue","green","red","yellow","purple","orange"]
+        for i in range(len(list_year)):
+            year = list_year[i]
+            df_country= result_country_grouped[result_country_grouped["Year"] == year]
+            df_country["rank"] = df_country.groupby(["Month Number", "Month Name"])["total_client_mean"].rank(ascending=False,method="dense")
+            df_country_top = df_country[df_country["rank"] <= top]
+            country_top_list.extend(df_country_top['country'].unique())
+
+        country_top_list = pd.Series(country_top_list).unique()
+        country_color_dict = dict(zip(country_top_list,color_list))
+
+        ###########################
+        # Visualisation graphique #
+        ###########################
+
+        year = année
+
+        if year != 0:
+
+            # TOP Country Hotel Frequentation by Month for each year 2015, 2016, 2017
+            df_graph_hist = result_country_grouped[result_country_grouped["Year"] == year]
+            df_graph_hist.sort_values(["Month Number", "Month Name", "total_client_mean"],inplace=True)
+            df_graph_hist["rank"] = df_graph_hist.groupby(["Month Number", "Month Name"])["total_client_mean"].rank(ascending=False,method="dense")
+            df_top = df_graph_hist[df_graph_hist["rank"] <= top]
+
+            fig, ax = plt.subplots(1,1,figsize=(5,3))
+
+            g = sns.histplot(df_top,x="Month Name",hue="country",weights="total_client_mean",multiple="stack",legend=True,palette=country_color_dict) #,stat="percent"
+            plt.title("Top " + str(top) + " Moyenne de fréquentation journalière par Pays par Mois pour l'année " + str(year) + "\n")
+            plt.xticks(rotation = 90)
+            ax.set_xlabel("Mois")
+            ax.set_ylabel("Fréquentation client")
+            legend = ax.get_legend()
+            legend.set_title("Pays")
+            legend.set_bbox_to_anchor((-0.15, 0.5))
+
+            return fig
+
+        else:
+            # TOP Country Hotel Frequentation by Month for all years
+            df_graph_hist_all = result_country_grouped.groupby(["Month Number","Month Name","country"])["total_client_mean"].mean().reset_index()
+            df_graph_hist_all["rank"] = df_graph_hist_all.groupby(["Month Number", "Month Name"])["total_client_mean"].rank(ascending=False,method="dense")
+            df_top_all = df_graph_hist_all[df_graph_hist_all["rank"] <= top]
+
+            fig, ax = plt.subplots(1,1,figsize=(5,3))
+
+            sns.histplot(df_top_all,x="Month Name",hue="country",weights="total_client_mean",multiple="stack",legend=True,palette=country_color_dict) #,stat="percent"
+            plt.title("Top " + str(top) + " Moyenne de fréquentation journalière par Pays par Mois pour toutes les années\n")
+            plt.xticks(rotation = 90)
+            
+            ax.set_xlabel("Mois")
+            ax.set_ylabel("Fréquentation client")
+
+            legend = ax.get_legend()
+            legend.set_title("Pays")
+            legend.set_bbox_to_anchor((-0.15, 0.5))
+
             return fig
