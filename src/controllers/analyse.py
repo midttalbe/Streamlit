@@ -32,6 +32,9 @@ class Analyse():
     def getDFresult_country(self):
         return self.df_dict["result_country"]
 
+    def getDFresult_client_category(self):
+        return self.df_dict["result_client_category"]
+
     def global_transform(self):
         df = self.getDF()
         df.insert(0,'booking_id',df.reset_index().index + 1)
@@ -91,6 +94,55 @@ class Analyse():
         # Récupère les colonnes country et nombre de client
         result_country = pd.merge(df_booked_date,df[['booking_id','country','total_client','stays_total']],on='booking_id')     
         self.df_dict["result_country"] = result_country
+
+        # Pour les analyses 3 
+        # Création des catégories selon les critères suivants :
+        def procRow_Categorie(row):
+            nbAdult = row["adults"]
+            nbChildren = row["children"]
+            nbBabies = row["babies"]
+
+            if (nbBabies + nbChildren) > 0 :
+                if nbAdult == 2:
+                    return ["Avec Enfants","Couple"]
+                elif nbAdult == 1:
+                    return ["Avec Enfants","Personne seule"]
+                elif nbAdult > 2:
+                    return ["Avec Enfants","Groupe"]
+                elif nbAdult == 0:
+                    return ["Avec Enfants", "Enfants non accompagnés"]
+                else:
+                    return ["Avec Enfants", "None"]
+
+            else:
+                if nbAdult == 2:
+                    return ["Sans Enfants","Couple"]
+                elif nbAdult == 1:
+                    return ["Sans Enfants","Personne seule"]
+                elif nbAdult > 2:
+                    return ["Sans Enfants","Groupe"]
+                else:
+                    return ["Sans Enfants", "None"]
+
+        col_client_category = ["booking_id","adults","children","babies","total_client"]
+        # col_df = ["booking_id","Date","adults","children","babies","total_client"]
+        # Merge avec le df global pour récuperer les colonnes 'adults','children','babies','total_client'
+
+        tmp_df = df.loc[df['is_canceled']==0][col_client_category]
+        tmp_df = tmp_df[tmp_df["total_client"] >0]
+
+        # Création de la catégorie client
+        tmp_df["Client Category 2"] = tmp_df.apply(procRow_Categorie,axis=1)
+
+        # MAJ des champs 'Client Category','Client Subcategory'
+        tmp_df["Client Category"] = tmp_df["Client Category 2"].apply(lambda x:x[0])
+        tmp_df["Client Subcategory"] = tmp_df["Client Category 2"].apply(lambda x:x[1])
+
+        result_client_category = pd.merge(tmp_df,df_booked_date,on="booking_id")
+
+        del tmp_df
+
+        self.df_dict["result_client_category"] = result_client_category
 
     # def getData(self):
     #     return self.df 
@@ -373,6 +425,17 @@ class Analyse():
 
         year = année
 
+        def change_width(ax, new_value) :
+            for patch in ax.patches :
+                current_width = patch.get_width()
+                diff = current_width - new_value
+
+                # we change the bar width
+                patch.set_width(new_value)
+
+                # we recenter the bar
+                patch.set_x(patch.get_x() + diff * .5)
+
         if year != 0:
 
             # TOP Country Hotel Frequentation by Month for each year 2015, 2016, 2017
@@ -392,6 +455,8 @@ class Analyse():
             legend.set_title("Pays")
             legend.set_bbox_to_anchor((-0.15, 0.5))
 
+            change_width(ax, .85)
+
             return fig
 
         else:
@@ -405,7 +470,7 @@ class Analyse():
             sns.histplot(df_top_all,x="Month Name",hue="country",weights="total_client_mean",multiple="stack",legend=True,palette=country_color_dict) #,stat="percent"
             plt.title("Top " + str(top) + " Moyenne de fréquentation journalière par Pays par Mois pour toutes les années\n")
             plt.xticks(rotation = 90)
-            
+
             ax.set_xlabel("Mois")
             ax.set_ylabel("Fréquentation client")
 
@@ -413,4 +478,179 @@ class Analyse():
             legend.set_title("Pays")
             legend.set_bbox_to_anchor((-0.15, 0.5))
 
+            change_width(ax, .85)
+
             return fig
+
+
+    # Analyse 3 - 1 : Par catégorie client et par mois et années
+    def analyse_3_1(self, année:int):
+        result_client_category = self.getDFresult_client_category()
+
+        ###########################
+        # Préparation des données #
+        ###########################
+
+        # Calcul de la moyenne par jour du nombre de personne par catégorie
+        result_client_category_grouped = result_client_category.groupby(["Year","Client Category","Month Number","Month Name","Day of Month"])["booking_id"].count().rename("Count Category").reset_index()
+        result_client_category_grouped = result_client_category_grouped.groupby(["Year","Client Category","Month Number","Month Name"])["Count Category"].mean().rename("Avg Count Category").reset_index()
+
+        ###########################
+        # Visualisation graphique #
+        ###########################
+
+        color_cat = ["lightblue","lightgreen"]
+        pal_cat = dict(zip(result_client_category_grouped["Client Category"].unique(),color_cat))
+
+        year = année
+
+        def change_width(ax, new_value) :
+            for patch in ax.patches :
+                current_width = patch.get_width()
+                diff = current_width - new_value
+
+                # we change the bar width
+                patch.set_width(new_value)
+
+                # we recenter the bar
+                patch.set_x(patch.get_x() + diff * .5)
+
+        if year != 0:
+            # Graphique repartition des categories de client par Mois et par Année
+            df_graph_cat = result_client_category_grouped[result_client_category_grouped["Year"] == year]
+
+            fig, ax = plt.subplots(1,1,figsize=(5,3))
+            
+            g = sns.histplot(df_graph_cat,x="Month Name",weights="Avg Count Category",hue="Client Category",stat="percent",multiple="stack",palette=pal_cat)
+            g.legend(title="Catégorie Client",labels=["Sans Enfants","Avec Enfants"],loc='upper left',bbox_to_anchor=(1,1))
+            plt.title("Moyenne des réservations en % par catégorie client par mois pour l'année " + str(year) +"\n")
+            plt.xticks(rotation = 90)
+
+            ax.set_xlabel("Mois")
+            ax.set_ylabel("% Réservations")
+
+            change_width(ax, .85)
+
+            return fig
+
+        else:
+            # Graphique global repartition des categories de client par Mois pour toutes les années 
+            df_graph_cat_all = result_client_category_grouped.groupby(["Month Number","Month Name","Client Category"])["Avg Count Category"].mean().reset_index()
+
+            fig, ax = plt.subplots(1,1,figsize=(5,3))
+
+            g = sns.histplot(df_graph_cat_all,x="Month Name",weights="Avg Count Category",hue="Client Category",stat="percent",multiple="stack",palette=pal_cat)
+            g.legend(title="Catégorie Client",labels=["Sans Enfants","Avec Enfants"],loc='upper left',bbox_to_anchor=(1,1))
+            plt.title("Moyenne des réservations en % par catégorie client par mois pour toutes les années\n")
+            plt.xticks(rotation = 90)
+
+            ax.set_xlabel("Mois")
+            ax.set_ylabel("% Réservations")
+
+            change_width(ax, .85)
+
+            return fig
+
+
+    # Analyse 3 - 2 : Par sous catégorie de client - grahique polaire 
+    def analyse_3_2(self):
+        ###########################
+        # Préparation des données #
+        ###########################
+
+        result_client_category = self.getDFresult_client_category()
+
+        # Group by Category and Sub Category of Client 
+        result_client_subcategory_grouped = result_client_category.groupby(["Year","Client Category","Client Subcategory","Month Number","Month Name","Day of Month"])["booking_id"].count().rename("Count Category").reset_index()
+        result_client_subcategory_grouped = result_client_subcategory_grouped.groupby(["Year","Client Category","Client Subcategory","Month Number","Month Name"])["Count Category"].mean().rename("Avg Count Category").reset_index()
+
+        ######################################
+        # Préparation des données graphiques #
+        ######################################
+
+        # Create dataframe for the polar chart
+        df_polar = result_client_subcategory_grouped.groupby(["Month Number","Month Name","Client Category","Client Subcategory"])["Avg Count Category"].mean().reset_index()
+        client_cats = ["Avec Enfants","Sans Enfants"]
+        df_polars = [df_polar[df_polar["Client Category"] == client_cat] for client_cat in client_cats]
+        bar_list = []
+        label_list = []
+        sub_cat_list = []
+        # Calcule une dataframe qui somme toutes les sous catégories par mois
+        df_polar_month_sums = [df_polar.groupby("Month Name")["Avg Count Category"].sum().rename("Sum Month").reset_index() for df_polar in df_polars]
+
+        for i in range(len(df_polar_month_sums)):
+            df_polar = df_polars[i]
+            df_polar_month_sum = df_polar_month_sums[i]
+            sub_df_list = []
+            
+            # boucle pour chaque sous catégorie on créer une liste de valeur qui va être consommé par le polar chart
+            for subcategory in df_polar['Client Subcategory'].unique():
+                sub_df = df_polar[df_polar["Client Subcategory"] == subcategory].groupby(["Month Number","Month Name"])["Avg Count Category"].mean().rename('Avg Count Subcategory').reset_index()
+                
+                # Calculate the percentage of each subcategory by total of all subcategory in the same month
+                sub_df = pd.merge(sub_df,df_polar_month_sum,on='Month Name')
+                
+                # Calculate percentage in the month
+                sub_df['Avg Count Subcategory %'] = (sub_df['Avg Count Subcategory'] / sub_df['Sum Month']) * 100
+                sub_df_list.append(sub_df['Avg Count Subcategory %'].to_list())
+                
+            bar_list.append(sub_df_list)
+
+            label_list.append(sub_df['Month Name'].to_list())
+            sub_cat_list.append(df_polar['Client Subcategory'].unique())
+
+        ###########################
+        # Visualisation graphique #
+        ###########################
+
+        # Polar chart répartition en pourcentage du total des sous catégorie "Avec Enfants" et "Sans Enfants"
+        n_points = 12
+        # inner_radius = 1
+
+        all_sub_cat = pd.DataFrame(sub_cat_list).melt()['value'].dropna().drop_duplicates().to_list()
+        color = ['lightblue','lightgreen','red','orange']
+        color_dict = dict(zip(all_sub_cat,color))
+
+        x_max = 2*np.pi
+        x_coords = np.linspace(0.0, x_max, n_points, endpoint=False)
+        width = x_max / (n_points)
+
+        fig_list = []
+
+        for i in range(2):
+            fig, ax = plt.subplots(1,1,figsize=(4,4))
+
+            sub_cat = sub_cat_list[i]
+            bar = bar_list[i]
+            lab = label_list[i]
+            bottom = np.array([0.0]*12)
+            client_cat = client_cats[i]
+            sub_cat.sort()
+            for j in range(len(sub_cat)):   
+                cat = sub_cat[j]
+                col = color[j]
+
+                ax = plt.subplot(111, polar=True)
+                ax.set_theta_zero_location("N") # place Janvier en position 0°
+                sub_bar = bar[j]
+
+                plt.thetagrids(range(0, 360, int(360/12)), (lab))
+                ax.bar(
+                    x_coords,
+                    sub_bar,
+                    width=width,
+                    bottom=bottom,#inner_radius,
+                    color=color_dict[sub_cat[j]],
+                    edgecolor="black",
+                    linewidth=0.6,
+                    align='center'
+                )
+                bottom += np.array(sub_bar)
+            
+            plt.title("% Moyenne de fréquentation pour la catégorie \"" + client_cat + "\" par mois pour toutes les années\n")  
+
+            plt.legend(bbox_to_anchor=(1,0),title=client_cat, labels=sub_cat,loc="center left")         
+            
+            fig_list.append(fig)
+
+        return fig_list

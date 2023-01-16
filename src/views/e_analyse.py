@@ -154,6 +154,12 @@ def load_analyse_2_1(a:Analyse,année:int):
 # Analyse 2 - 2 : top 3 des pays les plus representé selon le mois et l'année
 def load_analyse_2_2(a:Analyse, année:int):
     return a.analyse_2_2(année)
+# Analyse 3 - 1 : distribution par catégorie (Enfants / Sans enfants) selon le mois et l'année
+def load_analyse_3_1(a:Analyse, année:int):
+    return a.analyse_3_1(année)
+# Analyse 3 - 2 : graphique polaire par sous catégorie (Couple, Seule, Groupe, Enfants seules) par mois toutes années confondues
+def load_analyse_3_2(a:Analyse):
+    return a.analyse_3_2()
 
 def load_view():
     col_a,col_b,col_c = st.columns([1,4,1])
@@ -201,8 +207,7 @@ d) Fréquentaton par rapport au jour de la semaine
                     plt_graph = load_analyse_1_1(a, year)
                     st.pyplot(plt_graph)
                     st.markdown("""
-                    
-                    **Méthode de calcul de la fréquentation journaliére :**
+                    #### **<u>Méthode de calcul de la fréquentation journaliére :</u>**
 
         Pour ce calcul, on utilise le champ "Arrival Date" qui represente la date d'arrivée à l'hotel et le champ "Nb Stays" qui represente le nombre de nuitées.
 
@@ -214,8 +219,7 @@ d) Fréquentaton par rapport au jour de la semaine
                     """,unsafe_allow_html=True)
 
                     st.markdown("""
-                    **Analyse des graphiques** :
-                    
+                    #### **<u>Analyse des graphiques :</u>**                    
 
         On a ici une representation par mois et par année de la moyenne jourrnalière de fréquentation sous forme de graphique à bar.
 
@@ -249,12 +253,12 @@ d) Fréquentaton par rapport au jour de la semaine
 
                     # Affichage du texte de methode de calcul et d'analyse
                     st.markdown("""
-                    **Methode de calcul :**<br>
+                    #### **<u>Methode de calcul :</u>**<br>
 
 Ici, on prend le total client brut par jour pour que le graphique puisse calculer la distribution journaliére selon le mois de l'année avec le min, le max, la mediane et le deux quantiles (25% et 75%). <br><br>
                     """,unsafe_allow_html=True)
                     st.markdown("""
-                    **Analyse des graphiques :**<br>
+                    #### **<u>Analyse des graphiques :</u>**<br>
 
 On a ici deux graphiques boites à moustache, le premier represente le 1er semestre et le deuxième represente le 2eme semestre.<br>
 
@@ -284,11 +288,13 @@ On voit que **le minimum se situe bien en Janvier** ce qui vient corroboré nos 
 
                     # Affichage Methode de calcul
                     st.markdown("""
-                    **Méthode de calcul :**<br>
+                    #### **<u>Méthode de calcul :</u>**<br>
 
 Ici, la fréquentation est calculé en 3 étapes :<br>
- **Etape 1 :** Somme(Nombre de client) par jour<br>
- **Etape 2 :** Création de catégorie "groupement de jours" selon le numéro du jour dans le mois :<br>
+
+ **<u>Etape 1 :</u>** Somme(Nombre de client) par jour<br>
+
+ **<u>Etape 2 :</u>** Création de catégorie "groupement de jours" selon le numéro du jour dans le mois :<br>
             -> "01 - 05" : inclus les jours 1, 2, 3, 4 et 5<br>
             -> "06 - 10" : inclus les jours 6, 7, 8, 9 et 10<br>
             -> "11 - 15" : inclus les jours 11, 12, 13, 14 et 15<br>
@@ -296,14 +302,14 @@ Ici, la fréquentation est calculé en 3 étapes :<br>
             -> "21 - 25" : inclus les jours 21, 22, 23, 24 et 25<br>
             -> "> 25"    : inclus tous les jours > 25<br>
 
- **Etape 3 :** Moyenne(Somme(Nombre de client) par jour) par "groupement de jours"<br>
+ **<u>Etape 3 :</u>** Moyenne(Somme(Nombre de client) par jour) par "groupement de jours"<br>
                     """,unsafe_allow_html=True)
 
                     # Affichage Texte d'analyse
                     st.markdown("""
-                    **Analyse des grapqhiques :**<br>
+                    #### **<u>Analyse des grapqhiques :</u>**<br>
 
-On a ici 4 graphiques camemberts.<br>
+On a ici 4 graphiques camembert.<br>
 Les 3 premiers representent les années 2015, 2016 et 2017.<br>
 Le dernier représente toutes les années.<br>
 Sur chacun de ces graphiques, le minimum a été mis en evidence et a été détaché du reste du groupe.<br>
@@ -337,18 +343,20 @@ Si l'on avait pu avoir un jeu données plus conséquent, on aurait pu eventuelle
 
                     # Affichage Méthode de calcul
                     st.markdown("""
-                        **Méthode de calcul :** <br>
+                        #### **<u>Méthode de calcul :</u>** <br>
 
 Ici, la moyenne de fréquentation a été calculé en deux étapes :<br>
-    - Etape 1 : Somme(Nombre de client) par semaines et par années<br>
-    - Etape 2 : Moyenne(Somme(Nombre de client) par semaines et par années) par jour de la semaine<br>
+
+**<u>Etape 1 :</u>** Somme(Nombre de client) par semaines et par années<br>
+
+**<u>Etape 2 :</u>** Moyenne(Somme(Nombre de client) par semaines et par années) par jour de la semaine<br>
                         """,unsafe_allow_html=True)
 
                     if choix_dict[choix] == "CLUSTER":
 
                         # Affichage Texte analyse
                         st.markdown("""
-                        **Analyse du graphique cluster :**<br>
+                        #### **<u>Analyse du graphique cluster :</u>**<br>
 
 Ici, on a une representation sous forme de cluster.<br>
 La répartition est sur le type de jour "Jour de la semaine" ou bien "Fin de semaine".<br>
@@ -358,7 +366,7 @@ On voit ici que la réparation est equilibré en 50/50.<br>
                     else:
                         # Affichage Texte analyse
                         st.markdown("""
-                        **Analyse du graphique camember :**<br>
+                        #### **<u>Analyse du graphique camember :</u>**<br>
 
 Ici, on a une répartition de la fréquentation par rapport au jour de la semaine.<br>
 Le minimum a été mis en evidence et a été séparé des autres jours de la semaine.<br>
@@ -412,15 +420,16 @@ Par diversité, on entend le moment où l'on a le plus de pays différents repre
 
                     # Affichage Methode de calcul
                     st.markdown("""
-                    **Méthode de calcul :**<br>
+                    #### **<u>Méthode de calcul :</u>**<br>
 
 Le nombre de pays unique est calculé selon cette methode :<br>
- Nb Pays Unique = Count Distinct(Pays) pas années et par mois<br>
+
+    Nb Pays Unique = Count Distinct(Pays) pas années et par mois<br>
                     """,unsafe_allow_html=True)
 
                     # Affichage Texte analyse
                     st.markdown("""
-                    **Analyse des graphiques :**<br>
+                    #### **<u>Analyse des graphiques :</u>**<br>
 
 Les 3 premiers graphiques ci-dessus representent le nombre de pays unique par mois et pas années.<br>
 Sur chacun de ces 3 graphiques le maximum a été mis en evidence en rouge.<br>
@@ -443,16 +452,18 @@ Le maximum se situe en Juin. Les mois d'Avril, Mai, Octobre et Novembre se rappr
 
                     # Affichage Methode de calcul
                     st.markdown("""
-                    **Méthode de calcul :**<br>
+                    #### **<u>Méthode de calcul :</u>**<br>
 
 Le calcul de la moyenne de fréquentation par pays est effectué en 2 etapes :<br>
- Etape 1 : Somme(Nombre de client) par années, par pays, par mois et par jour<br>
- Etape 2 : Moyenne(Résultat Etape 1) par année, pays et mois<br>
+
+**<u>Etape 1 :**</u> Somme(Nombre de client) par années, par pays, par mois et par jour<br>
+
+**<u>Etape 2 :**</u> Moyenne(Résultat Etape 1) par année, pays et mois<br>
                     """,unsafe_allow_html=True)
 
                     # Affichage Texte analyse
                     st.markdown("""
-                    **Analyse des graphiques :**<br>
+                    #### **<u>Analyse des graphiques :</u>**<br>
 Les graphiques ci-dessus representent la moyenne de fréquentation journaliéré par rapport au pays d'origine du client.<br>
 Les 3 premieres graphiques representent les années 2015, 2016 et 2017 découpés par mois.<br>
 
@@ -469,8 +480,132 @@ Sur le graphique final, on a une moyenne toutes années confondues de la fréque
 On voit encore ici une forte domination du Portugal, suivi de l'Angleterre et de la France.<br>
                     """,unsafe_allow_html=True)
 
+
+            st.markdown("""
+            ### **Conclusions des analyses sur la fréquentation par pays :**<br>
+
+Sur les graphiques du nombre de pays unique, on a pu voir que les mois de l'année representant le plus de diversité en terme de pays sont Avril, Mai, Juin et également sur Octobre et Novembre.<br>
+
+Sur les graphiques representant les pays les plus présents en terme de fréquence, on s'appercoit que 3 pays reviennent le plus souvent : France, Portugal et Angleterre.<br>
+                """,unsafe_allow_html=True)
+
             with st.expander("👨‍👩‍👧‍👦 - **3) Le meilleur moment pour les voyages selon que l'on séjourne avec des enfants ou sans enfants**"):
-                st.markdown("...")
+                st.markdown("""
+### **Le but de cette analyse est de pouvoir détécter les tendances catégories de clients et de sous-catégories de clients :**<br>
+Les **catégories** clients sont :
+- Client avec enfants<br>
+- Client sans enfants<br>
+
+<br>Les **sous-catégories** de client suivantes :
+- Couple<br>
+- Personne seule<br>
+- Groupe <br>
+- Enfants non accompagnés (uniquement pour la cétégorie "Avec Enfants")<br>
+
+<br>Ceci permettra de pouvoir choisir la période la plus propice pour :
+ - les voyages avec enfants pour pouvoir profiter d'une atmoshpère plus familiale <br>
+ - ou bien ceux préférant le moment où il y a le moins d'enfants pour plus de tranquilité par exemple<br>
+                """,unsafe_allow_html=True)
+
+                choix_options = ["Par catégorie client - Graphique à bar",
+                                "Par sous catégorie de client - Graphique polaire"
+                                    ]
+                choix_index = ["CATEGORIE","SOUS-CATEGORIE"]
+                choix_dict = dict(zip(choix_options,choix_index))
+
+                choix = st.selectbox("Choisissez le perimètre d'analyse",options=choix_options)
+
+
+
+                if choix_dict[choix] == "CATEGORIE":
+                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_1_1")
+                    if year == "Toutes années": year = 0
+
+                    # Calcul du graphique
+                    plt_graph = load_analyse_3_1(a,year)
+                        
+                    # Affichage du graphique
+                    st.pyplot(plt_graph)
+
+                    # Affichage Methode de calcul
+                    st.markdown("""
+#### **<u>Méthode de calcul :**</u><br>
+
+Le calcul des fréquentations par catégories est effectué en deux etapes :<br>
+
+ **<u>Etape 1</u>** : Count(Catégorie) par année, mois et jours<br>
+ 
+ **<u>Etape 2</u>** : Moyenne(Résultat Etape 1) par année et mois<br>
+                    """,unsafe_allow_html=True)
+
+                    # Affichage Texte analyse
+                    st.markdown("""
+#### **<u>Analyse des graphiques :**</u><br>
+
+Les graphiques ci-dessus représente pour les années 2015, 2016 et 2017 une moyenne en % des réservations par mois et catégorie client.<br>
+
+Pour l'année 2015, on a pour la catégorie "Sans Enfants" un maximum sur le mois de Septembre et un minimum sur le mois Juillet.<br>
+Pour la catégorie "Avec Enfants", on a un maximum en Août et un minimum en Novembre.<br>
+
+Pour l'année 2016, on a pour la catégorie "Sans Enfants" un maximum sur le mois de Septembre et un minimum sur le mois de Janvier.<br>
+Pour la catégorie "Avec Enfants", on a un maximum au mois d'Août et un minimum en Janvier.<br>
+
+Pour l'année 2017, on a pour la catégorie "Sans Enfants" pour le mois de Mai et un minimum sur le mois de Septembre.<br>
+Pour la catégorie "Avec Enfants", on a un maximum au mois d'Août et un minimum sur le mois de Septembre. <br>
+Ceci est dû au deficit décrit lors des précedentes analyses.<br>
+
+D'un point de vue global, le dernier graphique permet de voir la répartition toutes années confondues.<br>
+Pour la catégorie "Sans Enfants", on a un maximum en Mai et un minimum en Janvier/Décembre.<br>
+Pour la catégorie "Avec Enfants", on a un maximum en Août et un minimum en Novembre.<br>
+                    """,unsafe_allow_html=True)
+
+                else:
+                    # Affichage Texte introduction
+                    st.markdown("""
+                    #### **<u>Graphique par Sous Catégorie :</u>**
+- Couple (Toutes catégories)
+- Groupe (Toutes catégories)
+- Personne Seule (Toutes catégories)
+- Enfants non accompagnés (Catégorie 'Avec Enfants')
+                    """,unsafe_allow_html=True)
+
+                    # Calcul du graphique
+                    plt_graph_list = load_analyse_3_2(a)
+                        
+                    # Affichage du graphique
+                    for plt_graph in plt_graph_list:
+                        st.pyplot(plt_graph)
+
+                    # Affichage Methode de calcul
+                    st.markdown("""
+#### **<u>Méthode de calcul :</u>**<br>
+
+Le calcul des fréquentations par sous-catégories est effectué en 2 étapes :<br>
+
+**<u>Etape 1 :</u>** Count(Réservation) par Année, Catégorie, Sous catégorie, Mois, Jour<br>
+
+**<u>Etape 2 :</u>** Moyenne(Résultat Etape 1) par Année, Catégorie, Sous catégorie, Mois<br>
+                    """,unsafe_allow_html=True)
+
+                    # Affichage Texte analyse
+                    st.markdown("""
+                    #### **<u>Analyse des graphiques :</u>**<br>
+On ici 2 graphiques représentant chacun une décomposition des catégories "Avec Enfants" et "Sans Enfants".<br>
+La décomposition s'effectue par mois en fonction du pourcentage du nombre de réservation.<br>
+
+Sur le premier graphique "Avec Enfants", on peut voir que la catégorie couples avec enfants est dominante.<br>
+Elle est majoritaire sur le mois d'Août.
+La catégorie "Enfants non accompagnés" est majoritaire sur le mois Novembre.<br>
+La catégorie personne seule avec enfants est majoritairement présente sur les mois de Janvier, Février et Octobre.<br>
+En ce qui concerne la catégorie groupe avec enfants, elle est plutôt minime et est majoritaire sur le mois de Janvier.<br>
+
+Sur le second graphique "Sans Enfants", on a toujours une nette domination de la sous-catégorie "Couple".<br>
+La catégorie "Personne seule" se situe en deuxiéme position en terme de volume de réservation. <br>
+On a un maximum en Janvier et un minimum en Juillet/Août.<br>
+Pour la catégorie "Groupe", on a un maximum en Juillet/Août et un minimum en Novembre.
+                    """,unsafe_allow_html=True)
+
+
 
 
             with st.expander("💳 - **4) Le meilleur moment pour bénéficier d'un sur-classement de type de chambre ou bien en terme de prix attractif**"):
