@@ -160,6 +160,13 @@ def load_analyse_3_1(a:Analyse, année:int):
 # Analyse 3 - 2 : graphique polaire par sous catégorie (Couple, Seule, Groupe, Enfants seules) par mois toutes années confondues
 def load_analyse_3_2(a:Analyse):
     return a.analyse_3_2()
+# Analyse 4 - 1 : HeatMap répartition des surclassements, déclassements et inchangées
+def load_analyse_4_1(a:Analyse):
+    return a.analyse_4_1()
+# Analyse 4 - 2 : Linechart de répartition des surclassements, déclassements et inchangées selon le mois toutes années confondues
+def load_analyse_4_2(a:Analyse):
+    return a.analyse_4_2()
+
 
 def load_view():
     col_a,col_b,col_c = st.columns([1,4,1])
@@ -505,6 +512,7 @@ Les **catégories** clients sont :
 <br>Ceci permettra de pouvoir choisir la période la plus propice pour :
  - les voyages avec enfants pour pouvoir profiter d'une atmoshpère plus familiale <br>
  - ou bien ceux préférant le moment où il y a le moins d'enfants pour plus de tranquilité par exemple<br>
+ <br>
                 """,unsafe_allow_html=True)
 
                 choix_options = ["Par catégorie client - Graphique à bar",
@@ -513,9 +521,7 @@ Les **catégories** clients sont :
                 choix_index = ["CATEGORIE","SOUS-CATEGORIE"]
                 choix_dict = dict(zip(choix_options,choix_index))
 
-                choix = st.selectbox("Choisissez le perimètre d'analyse",options=choix_options)
-
-
+                choix = st.selectbox("**Choisissez le perimètre d'analyse**",options=choix_options)
 
                 if choix_dict[choix] == "CATEGORIE":
                     year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_1_1")
@@ -605,9 +611,76 @@ On a un maximum en Janvier et un minimum en Juillet/Août.<br>
 Pour la catégorie "Groupe", on a un maximum en Juillet/Août et un minimum en Novembre.
                     """,unsafe_allow_html=True)
 
+            # Affichage Conclusions Analyse 3
+            st.markdown("""
+                ### **Conclusions sur les graphiques "Catégorie Client" et "Sous-catégorie Client" :**<br>
 
+D'après le graphique de répartition par mois et année, on en conclus ceci :<br>
+Pour les personnes souhaitant le calme sans enfants, il est préferable de réserver en Mai ou en Novembre.<br>
+D'un autre côté ceux souhaitant jouir d'une atmosphére plus familiale doivent réserver en Août.<br>
 
+Si l'on s'interesse au type de client à savoir Couple, Groupe ou Personne seules, on en conclus ceci :<br>
+Les personnes seules sont plus nombreuses à reserver au mois de Janvier et Novembre.<br>
+Les couples quant à eux sont plus nombreux à réserver en Juillet/Août.<br>
+Les groupes sont également plus nombreux au mois Juillet/Août.<br>
+
+Enfin en ce qui concerne les enfants non accompagnés, ils sont plus nombreux au mois de Novembre.<br>
+
+                """,unsafe_allow_html=True)
 
             with st.expander("💳 - **4) Le meilleur moment pour bénéficier d'un sur-classement de type de chambre ou bien en terme de prix attractif**"):
-                st.markdown("...")
+                # Affichage Introduction
+                st.markdown("""
+                #### **Le but de cette analyse est :**<br>
+a) Visualiser la répartition des surclassements et des déclassement de chambre d'hotel :<br>
+> Rappel : les types de chambres sont catégorisés par lettre allant de A à L<br>
+b) Visualiser cette même répartition selon les mois de l'année<br>
+
+                """,unsafe_allow_html=True)
+
+                # Choix Périmètre analyse
+                choix_options = ["a) Surclassement et Déclassement par répartition - Heatmap",
+                "b) Surclassement et Déclassement par mois - Histogramme"
+                    ]
+                choix_index = ["HEATMAP","HISTO"]
+                choix_dict = dict(zip(choix_options,choix_index))
+
+                choix = st.selectbox("**Choisissez le perimètre d'analyse**",options=choix_options)
+
+                if choix_dict[choix] == "HEATMAP":
+                    
+                    # Calcul du graphique
+                    plt_graph = load_analyse_4_1(a)
+
+                    # Affichage du graphique
+                    st.pyplot(plt_graph)
+
+                    # Affichage Méthode de calcul
+                    st.markdown("""
+                    #### **<u>Méthode de calcul :</u>**<br>
+                    """,unsafe_allow_html=True)
+
+                    # Affichage Texte Analyse
+                    st.markdown("""
+                    #### **<u>Analyse du graphique :</u>**<br>
+                    """,unsafe_allow_html=True)
+
+                else:
+                    # Calcul du graphique
+                    plt_graph = load_analyse_4_2(a)
+
+                    # Affichage du graphique
+                    st.pyplot(plt_graph)
+
+                    # Affichage Méthode de calcul
+                    st.markdown("""
+                    #### **<u>Méthode de calcul :</u>**<br>
+                    """,unsafe_allow_html=True)
+
+                    # Affichage Texte Analyse
+                    st.markdown("""
+                    #### **<u>Analyse du graphique :</u>**<br>
+                    """,unsafe_allow_html=True)
+
+
 

@@ -5,6 +5,8 @@ import matplotlib.patches as mpatches
 import seaborn as sns
 import numpy as np
 import squarify as sqry
+from matplotlib.lines import Line2D
+
 
 class Analyse():
 
@@ -34,6 +36,9 @@ class Analyse():
 
     def getDFresult_client_category(self):
         return self.df_dict["result_client_category"]
+
+    def getDFdf_prix(self):
+        return self.df_dict["df_prix"]
 
     def global_transform(self):
         df = self.getDF()
@@ -90,12 +95,18 @@ class Analyse():
         # Ajoute result_grouped dans le dictionnaire de DF
         self.df_dict["result_grouped"] = result_grouped
 
-        # Pour les analyses 2
+        #######################
+        # Pour les analyses 2 #
+        #######################
+
         # Récupère les colonnes country et nombre de client
         result_country = pd.merge(df_booked_date,df[['booking_id','country','total_client','stays_total']],on='booking_id')     
         self.df_dict["result_country"] = result_country
 
-        # Pour les analyses 3 
+        #######################
+        # Pour les analyses 3 #
+        #######################
+
         # Création des catégories selon les critères suivants :
         def procRow_Categorie(row):
             nbAdult = row["adults"]
@@ -143,6 +154,43 @@ class Analyse():
         del tmp_df
 
         self.df_dict["result_client_category"] = result_client_category
+
+        #######################
+        # Pour les analyses 4 #
+        #######################
+
+        # Préparation des données pour le calcul de prix le plus bas
+
+        # Si assigned room est égale à reserved room alors 0
+        # Si assigned room est supérieur à reserved room alors 1
+        # Si assigned room est infèrieur à reserved room alors -1
+        def calculate_surclassement(row):
+            assigned = row['assigned_room_type']
+            reserved = row['reserved_room_type']
+
+            if assigned < reserved: return 1
+            else: return 0
+
+        def calculate_declassement(row):
+            assigned = row['assigned_room_type']
+            reserved = row['reserved_room_type']
+
+            if assigned > reserved: return 1
+            else: return 0
+
+        # Filtre colonne adr > 0 et total_client > 0
+        col = ['booking_id','hotel','assigned_room_type','reserved_room_type','stays_total','adults','children','total_client','adr','is_repeated_guest','meal']
+        df_tmp = df[col][(df['adr'] > 0) & (df['total_client'] > 0)]
+        df_tmp['adr_client'] = (df_tmp['adr'])/ (df_tmp['total_client'])
+        df_tmp['is_surclassement'] = df_tmp.apply(calculate_surclassement, axis=1)
+        df_tmp['is_declassement']  = df_tmp.apply(calculate_declassement, axis=1)
+        df_tmp['is_regular'] = df_tmp['assigned_room_type'] == df_tmp['reserved_room_type']
+        df_tmp['is_regular'] = df_tmp['is_regular'].apply(int)
+
+        df_prix = pd.merge(df_booked_date,df_tmp,on='booking_id')
+        self.df_dict["df_prix"] = df_prix
+        del df_tmp        
+
 
     # def getData(self):
     #     return self.df 
@@ -519,7 +567,7 @@ class Analyse():
             # Graphique repartition des categories de client par Mois et par Année
             df_graph_cat = result_client_category_grouped[result_client_category_grouped["Year"] == year]
 
-            fig, ax = plt.subplots(1,1,figsize=(5,3))
+            fig, ax = plt.subplots(1,1,figsize=(5,4))
             
             g = sns.histplot(df_graph_cat,x="Month Name",weights="Avg Count Category",hue="Client Category",stat="percent",multiple="stack",palette=pal_cat)
             g.legend(title="Catégorie Client",labels=["Sans Enfants","Avec Enfants"],loc='upper left',bbox_to_anchor=(1,1))
@@ -618,7 +666,7 @@ class Analyse():
         fig_list = []
 
         for i in range(2):
-            fig, ax = plt.subplots(1,1,figsize=(4,4))
+            fig, ax = plt.subplots(1,1,figsize=(5,5))
 
             sub_cat = sub_cat_list[i]
             bar = bar_list[i]
@@ -654,3 +702,127 @@ class Analyse():
             fig_list.append(fig)
 
         return fig_list
+
+    
+    # Analyse 4 - 1 : Heatmap répartition des surclassements, déclassements et des inchangés
+    def analyse_4_1(self):
+        ######################################
+        # Préparation des données graphiques #
+        ######################################
+
+        def format_percent(val): 
+            val = val * 100
+            if val>0.1:
+                return np.round(val)
+            elif val>0.01:
+                return np.round(val,1)
+            else:
+                return np.round(val, 2)
+
+        color_declassement = 'red'
+        color_surclassement = 'blue'
+        color_nochange = 'green'
+        legend_heat = [mpatches.Patch(color=color_surclassement, label="% Surclassement"),
+                    mpatches.Patch(color=color_declassement, label="% Déclassement"),
+                    mpatches.Patch(color=color_nochange, label="% Inchangée"),
+                    
+                    ]
+
+        df_prix = self.getDFdf_prix()
+
+        df_heat_surclassement = df_prix[df_prix['is_surclassement']>=0]
+        total_surclassement = df_heat_surclassement['is_surclassement'].sum()
+        df_heat_surclassement_cross = pd.crosstab(df_heat_surclassement['assigned_room_type'],df_heat_surclassement['reserved_room_type'],values=df_heat_surclassement['is_surclassement'],aggfunc='sum')
+        df_heat_surclassement_cross = np.round( (df_heat_surclassement_cross /total_surclassement ) * 100,2) 
+        df_heat_surclassement_cross.replace(0,np.NaN,inplace=True)
+
+        df_heat_declassement = df_prix[df_prix['is_declassement']>=0]
+        total_declassement = df_heat_declassement['is_declassement'].sum() 
+        df_heat_declassement_cross = pd.crosstab(df_heat_declassement['assigned_room_type'],df_heat_declassement['reserved_room_type'],values=df_heat_declassement['is_declassement'],aggfunc='sum')
+        df_heat_declassement_cross = np.round( (df_heat_declassement_cross / total_declassement) * 100,2) 
+        df_heat_declassement_cross.replace(0,np.NaN,inplace=True)
+
+        df_heat_nochange = df_prix[df_prix['is_regular']>=0]
+        total_nochange = df_heat_nochange['is_regular'].sum()
+        df_heat_nochange_cross = pd.crosstab(df_heat_nochange['assigned_room_type'],df_heat_nochange['reserved_room_type'],values=df_heat_nochange['is_regular'],aggfunc='sum')
+        df_heat_nochange_cross = np.round( (df_heat_nochange_cross /total_nochange ) * 100,2) 
+        df_heat_nochange_cross.replace(0,np.NaN,inplace=True)
+
+        ###########################
+        # Visualisation graphique #
+        ###########################
+
+        fig, ax = plt.subplots(1,1,figsize=(10,8))
+
+        sns.heatmap(df_heat_surclassement_cross,cmap='Blues',annot=True,fmt='g',cbar_kws = dict(shrink= 0.5,use_gridspec=True,location="right"))
+        sns.heatmap(df_heat_declassement_cross,cmap='Reds',annot=True,fmt='g',cbar_kws = dict(shrink= 0.5,use_gridspec=True,location="left"))
+        g = sns.heatmap(df_heat_nochange_cross,cmap='Greens',annot=True,fmt='g',cbar_kws = dict(shrink= 0.7,use_gridspec=False,location="bottom"))
+
+        for t in g.texts:
+            if float(t.get_text())<1:
+                t.set_text("< 1")#t.get_text().replace('-','')) #if the value is greater than 0.4 then I set the text 
+            elif float(t.get_text())>10:
+                t.set_text(str(int(np.round(float(t.get_text())))))
+            else:
+                t.set_text(t.get_text()) # if not it sets an empty text
+
+        plt.title("Répartition en % de type de chambre en terme de surclassement, de déclassement et d'inchangée toutes périodes confondues\n")
+        plt.legend(bbox_to_anchor =(-0.3, 1),handles=legend_heat,loc="upper center")
+        g.set_yticklabels(g.get_yticklabels(), rotation=90)
+        plt.xlabel('Chambre Reservée')
+        plt.ylabel('Chambre Assignée',rotation=90,loc='center')
+
+        return fig
+
+    # Analyse 4 - 2 : Linechart distribution surclassement, déclassement et inchangés par mois toutes années confondus
+    def analyse_4_2(self):
+        
+        ######################################
+        # Préparation des données graphiques #
+        ######################################
+
+        # Préparation des données nombre de Surclassement et Déclassement par mois 
+        cols = ['Date','Month Name','Month Number','is_surclassement','is_declassement','is_regular']
+
+        df_prix = self.getDFdf_prix()
+
+        # Calcul du dataframe du graphique
+        df_surclassement = df_prix[cols]
+        df_surclassement_month = df_surclassement.groupby(['Month Number','Month Name'])[['is_surclassement','is_declassement','is_regular']].sum().reset_index()
+
+        # Calcul des totaux
+        total_surclassement = df_prix[df_prix['is_surclassement']>=0]['is_surclassement'].sum()
+        total_declassement = df_prix[df_prix['is_declassement']>=0]['is_declassement'].sum() 
+
+        # Calcul de chaque mesures sur le total de l'année
+        total_regular = df_surclassement_month["is_regular"].sum()
+        df_surclassement_month['is_surclassement %'] = (df_surclassement_month['is_surclassement'] + 1) / (total_surclassement + 1) * 100
+        df_surclassement_month['is_declassement %'] = (df_surclassement_month['is_declassement'] + 1) / (total_declassement + 1) * 100
+        df_surclassement_month['is_regular %'] = (df_surclassement_month['is_regular'] + 1) / (total_regular + 1) * 100
+
+        ###########################
+        # Visualisation graphique #
+        ###########################
+
+        fig, ax = plt.subplots(1,1,figsize=(5,4))
+
+        # Légende personnalisée
+        legend_line = [mpatches.Patch(color=[0.80811509, 0.54506305, 0.53468464], label="% Déclassement" ),
+                    Line2D([0], [0], color='blue', lw=4, label='% Surclassement'),
+                    Line2D([0], [0], color='green', lw=4, label='% Inchangée')
+                    ]
+
+        sns.lineplot(df_surclassement_month,x='Month Name',y='is_surclassement %',color='blue',legend="auto")
+        plt.xticks(rotation = 90)
+
+        sns.lineplot(df_surclassement_month,x='Month Name',y='is_regular %',color='green')
+        sns.barplot(df_surclassement_month,x='Month Name',y='is_declassement %',color='red',alpha=0.6)
+        plt.xticks(rotation = 90)
+
+        plt.legend(bbox_to_anchor =(-0.3, 1),handles=legend_line,loc="upper center")
+        
+        ax.set_ylabel("Pourcentage - %")
+        ax.set_xlabel("Mois")
+
+        return fig
+
