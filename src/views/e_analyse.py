@@ -13,7 +13,7 @@ def load_problematique():
     1) Le meilleur moment pour être au calme avec le moins d'affluence possible
     2) Le meilleur moment pour avoir le plus de diversité en terme de pays représenté
     3) Le meilleur moment pour les voyages selon que l'on séjourne avec des enfants ou sans enfants
-    4) Le meilleur moment pour bénéficier d'un sur-classement de type de chambre ou bien en terme de prix attractif 
+    4) Le meilleur moment pour bénéficier d'un sur-classement de type de chambre 
     """)
 
 def load_transformation():
@@ -191,9 +191,9 @@ def load_view():
             st.subheader("L'analyse :")
             with st.expander("📅 - **1) Le meilleur moment pour être au calme avec le moins d'affluence possible**"):
                 choix_options = ["Par mois et par années - Graphique à Bar",
-                                "Par semestre et par mois toutes années confondus - Graphique en Boîte à moustache",
-                                "Par rapport au numéro du jour dans le mois par années - Graphique en Camember",
-                                "Par rapport au jour de la semaine pour toutes les années - Graphique en Cluster"
+                                "Par semestre et par mois toutes années confondus - Boîte à moustache",
+                                "Par rapport au numéro du jour dans le mois par années - Camember",
+                                "Par rapport au jour de la semaine pour toutes les années - Cluster"
                                 ]
                 choix_index = [1,2,3,4]
                 choix_dict = dict(zip(choix_index,choix_options))
@@ -248,7 +248,7 @@ d) Fréquentaton par rapport au jour de la semaine
                     """,unsafe_allow_html=True)
 
                 elif choix == choix_dict[2]:
-                    st.markdown(choix_dict[2])
+                    # st.markdown(choix_dict[2])
 
                     # Calcul des graphiques à moustache par semestre
                     plt_semestre1 = load_analyse_1_2(a,0)
@@ -283,7 +283,7 @@ On voit que **le minimum se situe bien en Janvier** ce qui vient corroboré nos 
 
 
                 elif choix == choix_dict[3]:
-                    st.markdown(choix_dict[3])
+                    # st.markdown(choix_dict[3])
                     year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_1_3")
                     if year == "Toutes années": year = 0
 
@@ -524,7 +524,7 @@ Les **catégories** clients sont :
                 choix = st.selectbox("**Choisissez le perimètre d'analyse**",options=choix_options)
 
                 if choix_dict[choix] == "CATEGORIE":
-                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_1_1")
+                    year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_3_1")
                     if year == "Toutes années": year = 0
 
                     # Calcul du graphique
@@ -613,7 +613,7 @@ Pour la catégorie "Groupe", on a un maximum en Juillet/Août et un minimum en N
 
             # Affichage Conclusions Analyse 3
             st.markdown("""
-                ### **Conclusions sur les graphiques "Catégorie Client" et "Sous-catégorie Client" :**<br>
+                ### **Conclusions des analyses par "Catégorie Client" et "Sous-catégorie Client" :**<br>
 
 D'après le graphique de répartition par mois et année, on en conclus ceci :<br>
 Pour les personnes souhaitant le calme sans enfants, il est préferable de réserver en Mai ou en Novembre.<br>
@@ -658,11 +658,37 @@ b) Visualiser cette même répartition selon les mois de l'année<br>
                     # Affichage Méthode de calcul
                     st.markdown("""
                     #### **<u>Méthode de calcul :</u>**<br>
+Pour effectuer une visualisation graphique sous forme de heat map, on a ici besoin de calculer 3 matrices.<br>
+Une matrice pour les surclassements, un deuxième pour les déclassements et une troisième pour les inchangées.<br>
+
+<u>Calcul de la matrice SURCLASSEMENT :</u> <br>
+> Etape 1 : Somme(Surclassement)<br>
+> Etape 2 : Tableau croisée en ligne les chambres reservées, en colonne les chambres assignées, en indicateur la somme des surclassements<br>
+> Etape 3 : On divise l'indicateur du tableau croisé par la somme des surclassements de l'Etape 1<br>
+> Etape 4 : on remplace les valeurs à 0 par des NA (pour eviter d'interferer avec les valeurs de declassement et inchangées)<br>
+
+<u>Calcul de la matrice DECLASSEMENT :</u><br>
+> On applique la même méthode que les SURCLASSEMENT en remplaçant l'indicateur par la somme des déclassements<br>
+
+<u>Calcul de la matrice INCHANGEE :</u><br>
+> On applique la même méthode que les SURCLASSEMENT en remplaçant l'indicateur par la somme des inchangées<br>
                     """,unsafe_allow_html=True)
 
                     # Affichage Texte Analyse
                     st.markdown("""
                     #### **<u>Analyse du graphique :</u>**<br>
+D'après les analyses du graphique, on en conclus que :<br>
+
+<u>Pour les SURCLASSEMENTS :</u><br>
+>* Les forts taux de suclassement se situent sur les catégories B vers A (19%) et D vers A (49%)<br>
+>* Les plus faibles taux de surclassement se situent sur les  catégories C et L<br>
+
+<u>Pour les DECLASSEMENTS :</u><br>
+>* Les plus forts de taux de déclassement se situent sur les catégories A vers D (52%), A vers E (7.8%) et D vers E (5.7%)<br>
+
+<u>Pour les INCHANGEES :</u><br>
+>* Pour les inchangées, les plus fort taux se situent sur les catégories A (62%) et D(22%)<br>
+>* Les plus faibles sont situés sur les catégories B (<1%), C(1.14%), H(<1%)<br>
                     """,unsafe_allow_html=True)
 
                 else:
@@ -675,12 +701,48 @@ b) Visualiser cette même répartition selon les mois de l'année<br>
                     # Affichage Méthode de calcul
                     st.markdown("""
                     #### **<u>Méthode de calcul :</u>**<br>
+Pour effectuer une visualisation graphique sous forme d'histogramme, on a besoin des 3 indicateurs suivants : <br>
+* Total Surclassement par mois<br>
+* Total Déclassement par mois<br>
+* Total des Inchangés par mois<br>""",unsafe_allow_html=True)
+                    st.markdown(""" """)
+                    st.markdown("""
+Ensuite, on calcule le ratio par mois par rapport au total sur l'année, on multiplie le tout par 100 pour obtenir le pourcentage :<br>
+* Ratio Déclassement = Total des déclassementss par mois / Total des déclassements sur l'année * 100<br> 
+* Ratio Surclassement = Total des surclassements par mois / Total des surclassements sur l'année * 100<br>
+* Ratio Inchangée = Total des inchangées par mois / Total des inchangées sur l'année * 100<br>
                     """,unsafe_allow_html=True)
 
                     # Affichage Texte Analyse
                     st.markdown("""
                     #### **<u>Analyse du graphique :</u>**<br>
+D'après les analyses du graphique, on en conclus que :<br>
+
+<u>Pour les SURCLASSEMENTS (Courbe en bleu) :</u><br>
+> * On a 2 pics, le premier en Mars et le deuxième en Juillet<br>
+> * On a 2 fortes baisses en Mai et en Novembre<br>
+
+<u>Pour les DECLASSEMENTS (Bar en rouge) :</u><br>
+> * On a 2 gros pics en Septembre et en Octobre<br>
+> * Les moments les plus faibles sont en Juin et Juillet<br>
+
+<u>Pour les INCHANGEES (Courbe en vert) :</u><br>
+>* On un gros pic en Août<br>
+>* Les moments les plus faibles se situent en début et fin d'année<br>
                     """,unsafe_allow_html=True)
+
+
+            st.markdown("""
+                ### **Conclusions des analyses des "surclassements" et "déclassements" de chambre d'hôtel :**<br>
+Concernant le meilleur type de chambre à choisir pour bénéficier d'un surclassement, on a dans l'ordre décroissant :<br>
+>* Les chambres de type D (49% de surclassement)<br>
+>* Les chambres de type B (19% de surclassement)<br>
+>* Les chambres de type F (~8% de surclassement)<br>
+
+Concernant les meilleurs moments de l'année pour bénéficier d'un surclassement, on a :<br>
+>* La période allant de Juillet à Août<br>
+Il faut éviter les débuts et fins d'année et les mois de Septembre et Octobre qui enregistre les plus forts taux de déclassement de chambre.<br>
+                """,unsafe_allow_html=True)
 
 
 

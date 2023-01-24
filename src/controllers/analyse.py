@@ -271,7 +271,7 @@ class Analyse():
         df_graph_box_sem = df_graph_box[df_graph_box["Quarter"].isin(semester)]
         
         sem = int(np.ceil(semester[0]/2))
-        fig, ax = plt.subplots(1,1,figsize=(6,4))
+        fig, ax = plt.subplots(1,1,figsize=(7,5))
         sns.boxplot(df_graph_box_sem,x='Month Name',y="total_client")
 
         plt.xticks(rotation = 90)
@@ -752,7 +752,7 @@ class Analyse():
         # Visualisation graphique #
         ###########################
 
-        fig, ax = plt.subplots(1,1,figsize=(10,8))
+        fig, ax = plt.subplots(1,1,figsize=(12,10))
 
         sns.heatmap(df_heat_surclassement_cross,cmap='Blues',annot=True,fmt='g',cbar_kws = dict(shrink= 0.5,use_gridspec=True,location="right"))
         sns.heatmap(df_heat_declassement_cross,cmap='Reds',annot=True,fmt='g',cbar_kws = dict(shrink= 0.5,use_gridspec=True,location="left"))
