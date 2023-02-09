@@ -42,6 +42,8 @@ class Analyse():
 
     def global_transform(self):
         df = self.getDF()
+
+        # Insertion d'un identifiant unique pour chaque ligne de réservation
         df.insert(0,'booking_id',df.reset_index().index + 1)
 
         # Suppression des colonnes agent et company
@@ -50,14 +52,19 @@ class Analyse():
             if col in drop_column:
                 df.drop(col,axis=1,inplace=True)
 
-        map_month = {'January':"1", 'February':"2", 'March':"3", 'April':"4", 'May':"5", 'June':"6",
-                    'July':"7", 'August':"8", 'September':"9", 'October':"10", 'November':"11", 'December':"12"}
+        # Dictionnaire de mapping Mois -> Numéro de mois
+        map_month = {'January':"1", 'February':"2", 'March':"3", 
+                     'April':"4", 'May':"5", 'June':"6",
+                    'July':"7", 'August':"8", 'September':"9", 
+                    'October':"10", 'November':"11", 'December':"12"}
 
         # Ajout d'une colonne calculé 'arrival_date_month_number' derivé de la colonne 'arrival_date_month'
         df['arrival_date_month_number'] = df['arrival_date_month'].map(map_month)
 
         # Ajout d'une colonne de type date arrival_date
-        df['arrival_date'] = df['arrival_date_year'].astype('string') + '-' + df['arrival_date_month_number'] + '-' + df['arrival_date_day_of_month'].astype('string')
+        df['arrival_date'] = df['arrival_date_year'].astype('string') \
+                            + '-' + df['arrival_date_month_number'] \
+                            + '-' + df['arrival_date_day_of_month'].astype('string')
         df['arrival_date'] = pd.to_datetime(df['arrival_date']) 
 
         # Convert la colonne reservation_status_date en datetime
@@ -70,7 +77,8 @@ class Analyse():
 
         # Ajout colonne departure_date = arrival_date + nb_stays pour les lignes not canceled
         df['departure_date'] = df['arrival_date'] + pd.to_timedelta(df['stays_total'], unit='D')
-        df['departure_date'] = pd.to_datetime(df['departure_date'])
+
+        # df['departure_date'] = pd.to_datetime(df['departure_date']) #inutile
 
         # Remplace les valeurs NA dans la colonne "children" par 0
         df["children"] = df['children'].fillna(0)
@@ -89,6 +97,11 @@ class Analyse():
 
         # create result dataframe
         df_booked_date = self.getDFbooked_date()
+
+        #######################
+        # Pour les analyses 1 #
+        #######################
+
         result = pd.merge(df_booked_date,df[['booking_id','total_client','stays_total']],on='booking_id')
         result_grouped = result.groupby(["Date","Year","Quarter","Week Number","Month Number","Month Name","Day of Month","Day Name","Day Number","Day Type"])['total_client'].sum().reset_index()
 
@@ -101,6 +114,8 @@ class Analyse():
 
         # Récupère les colonnes country et nombre de client
         result_country = pd.merge(df_booked_date,df[['booking_id','country','total_client','stays_total']],on='booking_id')     
+        
+        # On enregistre le dataframe Analyse 2 dans le dictionnnaire de classe Analyse
         self.df_dict["result_country"] = result_country
 
         #######################
@@ -136,7 +151,6 @@ class Analyse():
                     return ["Sans Enfants", "None"]
 
         col_client_category = ["booking_id","adults","children","babies","total_client"]
-        # col_df = ["booking_id","Date","adults","children","babies","total_client"]
         # Merge avec le df global pour récuperer les colonnes 'adults','children','babies','total_client'
 
         tmp_df = df.loc[df['is_canceled']==0][col_client_category]
@@ -201,7 +215,9 @@ class Analyse():
         # Préparation des données #
         ###########################
         result_grouped = self.getDFresult_grouped()
-        result_grouped_month_year = result_grouped.groupby([result_grouped["Year"],result_grouped["Quarter"], result_grouped["Month Number"],result_grouped["Month Name"]])['total_client'].mean().reset_index()
+
+        result_grouped_month_year = result_grouped.groupby(["Year","Quarter",
+                        "Month Number","Month Name"])['total_client'].mean().reset_index()
 
         ###########################
         # Visualisation graphique #
@@ -256,7 +272,7 @@ class Analyse():
         # Préparation des données #
         ###########################
         result_grouped = self.getDFresult_grouped()
-        result_grouped_month_year = result_grouped.groupby([result_grouped["Year"],result_grouped["Quarter"], result_grouped["Month Number"],result_grouped["Month Name"]])['total_client'].mean().reset_index()
+        result_grouped_month_year = result_grouped.groupby(["Year","Quarter","Month Number","Month Name"])['total_client'].mean().reset_index()
         ## Group by Quarter for all years
         df_graph_box = result_grouped_month_year[['Quarter','Month Number','Month Name','total_client']]
 
@@ -287,8 +303,6 @@ class Analyse():
         # Préparation des données #
         ###########################
 
-        explode_distance = 0.3
-
         def cutDayOfMonth(daynum):
             if daynum <= 5: return '01-05'
             elif daynum <= 10: return '06-10'
@@ -308,13 +322,16 @@ class Analyse():
         # Visualisation graphique #
         ###########################
 
+        # Fonction lambda permettant de changer la distance de la portion camembert afin de la mettre en valeur
+        explode_distance = 0.3
+        f = lambda x : explode_distance if x == 1 else 0.05
+
         if année != 0:
             # Graphique Pie Chart par année
             year = année
             
             df_graph_pie_day_of_month = result_grouped_day_of_month[result_grouped_day_of_month['Year'] == year]
             rank_list = df_graph_pie_day_of_month['rank']
-            f = lambda x : explode_distance if x == 1 else 0.05
             explode_list = list(map(f,rank_list)) 
             
             fig, ax = plt.subplots(1,1,figsize=(5,5))
@@ -330,7 +347,6 @@ class Analyse():
             df_graph_pie_day_of_month = result_grouped_day_of_month.groupby("grpDay")["total_client_mean"].mean().reset_index()
             df_graph_pie_day_of_month['rank'] = df_graph_pie_day_of_month['total_client_mean'].rank()
             rank_list = df_graph_pie_day_of_month['rank']
-            f = lambda x : explode_distance if x == 1 else 0.05
             explode_list = list(map(f,rank_list)) 
 
             fig, ax = plt.subplots(1,1,figsize=(5,5))
@@ -351,7 +367,7 @@ class Analyse():
         explode_distance = 0.3
 
         # Par rapport au jour de la semaine 
-        result_grouped_day_of_week = result_grouped.groupby([result_grouped["Year"],result_grouped["Week Number"],result_grouped["Day Type"],result_grouped["Day Number"], result_grouped["Day Name"]])["total_client"].sum().reset_index()
+        result_grouped_day_of_week = result_grouped.groupby(["Year","Week Number","Day Type","Day Number","Day Name"])["total_client"].sum().reset_index()
 
         if type_de_graph == "CLUSTER":
             #############################
@@ -392,7 +408,7 @@ class Analyse():
 
         # Récupère les colonnes country et nombre de client
         result_country = self.getDFresult_country()
-        result_country_grouped_year_month = result_country.groupby([result_country["Year"],result_country["Month Number"],result_country["Month Name"]])['country'].nunique().rename('Nb Pays Unique').reset_index()
+        result_country_grouped_year_month = result_country.groupby(["Year","Month Number","Month Name"])['country'].nunique().rename('Nb Pays Unique').reset_index()
 
         ###########################
         # Visualisation graphique #
@@ -447,10 +463,12 @@ class Analyse():
         # Préparation des données #
         ###########################
 
-        # Most represented country for each month of year
+        # TOP 3 des pays les plus representés
         result_country = self.getDFresult_country()
-        result_country_grouped = result_country.groupby(["Year","country","Month Number","Month Name","Day of Month"])['total_client'].sum().rename("total_client_sum").reset_index()
-        result_country_grouped = result_country_grouped.groupby(['Year',"country","Month Number","Month Name"])['total_client_sum'].mean().rename('total_client_mean').reset_index()
+        result_country_grouped = result_country.groupby(["Year","country","Month Number","Month Name",
+                                    "Day of Month"])['total_client'].sum().rename("total_client_sum").reset_index()
+        result_country_grouped = result_country_grouped.groupby(['Year',"country","Month Number",
+                                    "Month Name"])['total_client_sum'].mean().rename('total_client_mean').reset_index()
 
         # Création de la palette de couleur pour chaque pays top 3 de l'année
         top = 3
@@ -540,8 +558,10 @@ class Analyse():
         ###########################
 
         # Calcul de la moyenne par jour du nombre de personne par catégorie
-        result_client_category_grouped = result_client_category.groupby(["Year","Client Category","Month Number","Month Name","Day of Month"])["booking_id"].count().rename("Count Category").reset_index()
-        result_client_category_grouped = result_client_category_grouped.groupby(["Year","Client Category","Month Number","Month Name"])["Count Category"].mean().rename("Avg Count Category").reset_index()
+        result_client_category_grouped = result_client_category.groupby(["Year","Client Category","Month Number",
+                    "Month Name","Day of Month"])["booking_id"].count().rename("Count Category").reset_index()
+        result_client_category_grouped = result_client_category_grouped.groupby(["Year","Client Category",
+                    "Month Number","Month Name"])["Count Category"].mean().rename("Avg Count Category").reset_index()
 
         ###########################
         # Visualisation graphique #
@@ -609,8 +629,10 @@ class Analyse():
         result_client_category = self.getDFresult_client_category()
 
         # Group by Category and Sub Category of Client 
-        result_client_subcategory_grouped = result_client_category.groupby(["Year","Client Category","Client Subcategory","Month Number","Month Name","Day of Month"])["booking_id"].count().rename("Count Category").reset_index()
-        result_client_subcategory_grouped = result_client_subcategory_grouped.groupby(["Year","Client Category","Client Subcategory","Month Number","Month Name"])["Count Category"].mean().rename("Avg Count Category").reset_index()
+        result_client_subcategory_grouped = result_client_category.groupby(["Year","Client Category","Client Subcategory",
+                    "Month Number","Month Name","Day of Month"])["booking_id"].count().rename("Count Category").reset_index()
+        result_client_subcategory_grouped = result_client_subcategory_grouped.groupby(["Year","Client Category","Client Subcategory",
+                    "Month Number","Month Name"])["Count Category"].mean().rename("Avg Count Category").reset_index()
 
         ######################################
         # Préparation des données graphiques #
@@ -653,27 +675,35 @@ class Analyse():
 
         # Polar chart répartition en pourcentage du total des sous catégorie "Avec Enfants" et "Sans Enfants"
         n_points = 12
-        # inner_radius = 1
 
+        # Récupère la liste des sous catégories
         all_sub_cat = pd.DataFrame(sub_cat_list).melt()['value'].dropna().drop_duplicates().to_list()
         color = ['lightblue','lightgreen','red','orange']
         color_dict = dict(zip(all_sub_cat,color))
 
+        # Calcul les espacements du cercle pour placer les points dans le polar chart
         x_max = 2*np.pi
         x_coords = np.linspace(0.0, x_max, n_points, endpoint=False)
         width = x_max / (n_points)
 
+        # Liste qui va contenir les deux graphiques calculés par la boucle ci dessous
         fig_list = []
 
+        # Boucle permettant de créer les deux graphiques "Avec Enfants" et "Sans Enfants"
         for i in range(2):
             fig, ax = plt.subplots(1,1,figsize=(5,5))
 
             sub_cat = sub_cat_list[i]
             bar = bar_list[i]
             lab = label_list[i]
+
+            # Tableau contenant les valeurs des catégories en %
             bottom = np.array([0.0]*12)
+
             client_cat = client_cats[i]
             sub_cat.sort()
+
+            # Place les points de sous catégories
             for j in range(len(sub_cat)):   
                 cat = sub_cat[j]
                 col = color[j]
@@ -682,6 +712,7 @@ class Analyse():
                 ax.set_theta_zero_location("N") # place Janvier en position 0°
                 sub_bar = bar[j]
 
+                # Appel le traçage du grapqhique polaire
                 plt.thetagrids(range(0, 360, int(360/12)), (lab))
                 ax.bar(
                     x_coords,
@@ -693,10 +724,12 @@ class Analyse():
                     linewidth=0.6,
                     align='center'
                 )
+
+                # Incrémente la valeur du tableau des catégories pour placer la catégorie au dessus de la précedente
                 bottom += np.array(sub_bar)
             
+            # Affiche Titre et Légende du graphique
             plt.title("% Moyenne de fréquentation pour la catégorie \"" + client_cat + "\" par mois pour toutes les années\n")  
-
             plt.legend(bbox_to_anchor=(1,0),title=client_cat, labels=sub_cat,loc="center left")         
             
             fig_list.append(fig)
@@ -732,19 +765,28 @@ class Analyse():
 
         df_heat_surclassement = df_prix[df_prix['is_surclassement']>=0]
         total_surclassement = df_heat_surclassement['is_surclassement'].sum()
-        df_heat_surclassement_cross = pd.crosstab(df_heat_surclassement['assigned_room_type'],df_heat_surclassement['reserved_room_type'],values=df_heat_surclassement['is_surclassement'],aggfunc='sum')
+        df_heat_surclassement_cross = pd.crosstab(df_heat_surclassement['assigned_room_type'], 
+                                                    df_heat_surclassement['reserved_room_type'],
+                                                    values=df_heat_surclassement['is_surclassement'],
+                                                    aggfunc='sum')
         df_heat_surclassement_cross = np.round( (df_heat_surclassement_cross /total_surclassement ) * 100,2) 
         df_heat_surclassement_cross.replace(0,np.NaN,inplace=True)
 
         df_heat_declassement = df_prix[df_prix['is_declassement']>=0]
         total_declassement = df_heat_declassement['is_declassement'].sum() 
-        df_heat_declassement_cross = pd.crosstab(df_heat_declassement['assigned_room_type'],df_heat_declassement['reserved_room_type'],values=df_heat_declassement['is_declassement'],aggfunc='sum')
+        df_heat_declassement_cross = pd.crosstab(df_heat_declassement['assigned_room_type'],
+                                                    df_heat_declassement['reserved_room_type'],
+                                                    values=df_heat_declassement['is_declassement'],
+                                                    aggfunc='sum')
         df_heat_declassement_cross = np.round( (df_heat_declassement_cross / total_declassement) * 100,2) 
         df_heat_declassement_cross.replace(0,np.NaN,inplace=True)
 
         df_heat_nochange = df_prix[df_prix['is_regular']>=0]
         total_nochange = df_heat_nochange['is_regular'].sum()
-        df_heat_nochange_cross = pd.crosstab(df_heat_nochange['assigned_room_type'],df_heat_nochange['reserved_room_type'],values=df_heat_nochange['is_regular'],aggfunc='sum')
+        df_heat_nochange_cross = pd.crosstab(df_heat_nochange['assigned_room_type'],
+                                                df_heat_nochange['reserved_room_type'],
+                                                values=df_heat_nochange['is_regular'],
+                                                aggfunc='sum')
         df_heat_nochange_cross = np.round( (df_heat_nochange_cross /total_nochange ) * 100,2) 
         df_heat_nochange_cross.replace(0,np.NaN,inplace=True)
 
@@ -754,18 +796,24 @@ class Analyse():
 
         fig, ax = plt.subplots(1,1,figsize=(12,10))
 
-        sns.heatmap(df_heat_surclassement_cross,cmap='Blues',annot=True,fmt='g',cbar_kws = dict(shrink= 0.5,use_gridspec=True,location="right"))
-        sns.heatmap(df_heat_declassement_cross,cmap='Reds',annot=True,fmt='g',cbar_kws = dict(shrink= 0.5,use_gridspec=True,location="left"))
-        g = sns.heatmap(df_heat_nochange_cross,cmap='Greens',annot=True,fmt='g',cbar_kws = dict(shrink= 0.7,use_gridspec=False,location="bottom"))
+        # Affichage des 3 graphiques Heat Map
+        sns.heatmap(df_heat_surclassement_cross,cmap='Blues',annot=True,
+            fmt='g',cbar_kws = dict(shrink= 0.5,use_gridspec=True,location="right"))
+        sns.heatmap(df_heat_declassement_cross,cmap='Reds',annot=True,
+            fmt='g',cbar_kws = dict(shrink= 0.5,use_gridspec=True,location="left"))
+        g = sns.heatmap(df_heat_nochange_cross,cmap='Greens',annot=True,
+            fmt='g',cbar_kws = dict(shrink= 0.7,use_gridspec=False,location="bottom"))
 
+        #Fonction qui modifie le format affichés dans la heat map
         for t in g.texts:
             if float(t.get_text())<1:
-                t.set_text("< 1")#t.get_text().replace('-','')) #if the value is greater than 0.4 then I set the text 
+                t.set_text("< 1")
             elif float(t.get_text())>10:
                 t.set_text(str(int(np.round(float(t.get_text())))))
             else:
                 t.set_text(t.get_text()) # if not it sets an empty text
 
+        # Affichage des titres et légendes
         plt.title("Répartition en % de type de chambre en terme de surclassement, de déclassement et d'inchangée toutes périodes confondues\n")
         plt.legend(bbox_to_anchor =(-0.3, 1),handles=legend_heat,loc="upper center")
         g.set_yticklabels(g.get_yticklabels(), rotation=90)
@@ -812,15 +860,18 @@ class Analyse():
                     Line2D([0], [0], color='green', lw=4, label='% Inchangée')
                     ]
 
+        # Affichage du graphique Line Chart - pour les sur-classements
         sns.lineplot(df_surclassement_month,x='Month Name',y='is_surclassement %',color='blue',legend="auto")
         plt.xticks(rotation = 90)
 
+        # Affichage du graphique Line Chart - pour les inchangées
         sns.lineplot(df_surclassement_month,x='Month Name',y='is_regular %',color='green')
+        # Affichage du graphique Bar Chart - pour les déclassements
         sns.barplot(df_surclassement_month,x='Month Name',y='is_declassement %',color='red',alpha=0.6)
-        plt.xticks(rotation = 90)
 
-        plt.legend(bbox_to_anchor =(-0.3, 1),handles=legend_line,loc="upper center")
-        
+        # Affichage des legendes et titres des axes
+        plt.xticks(rotation = 90)
+        plt.legend(bbox_to_anchor =(-0.3, 1),handles=legend_line,loc="upper center")   
         ax.set_ylabel("Pourcentage - %")
         ax.set_xlabel("Mois")
 

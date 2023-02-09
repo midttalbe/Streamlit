@@ -2,9 +2,74 @@
     max-width: 780px;
 } */
 
+/* CHECKBOX HACK */
+input[type=checkbox]{
+    display: none;
+} 
+
+/*HAMBURGER MENU*/
+.hamburger {
+    display: none;
+    font-size: 24px;
+    user-select: none;
+    }
+    
+/* APPLYING MEDIA QUERIES */
+@media (max-width: 992px)  {
+
+    .menu { 
+        display: none;
+        position: sticky;
+        background-color:rgb(246, 250, 250);
+        right: 0;
+        left: 0;
+        text-align: center;
+        padding: 16px 0;
+    }
+    
+    .menu li:hover {
+        display: inline-block;
+        background-color:rgb(33, 4, 249);
+        transition: 0.3s ease;
+    }
+    
+    .menu li + li {
+        margin-top: 12px;
+    }
+   
+    input[type=checkbox]:checked ~ .menu{
+        display: flex;
+        position: sticky;
+        flex-direction: column;
+        text-align: left;
+        width: 60%;
+        /* left: 0rem;
+        top: 0rem; */
+        padding-top: 0%;
+        padding-left: 0%;
+    }
+    
+    .hamburger {
+        display: block;
+        background-color: transparent;
+        width: 10%;
+    }
+    
+    .dropdown {
+        left: 10%;
+        top: 30px;
+        transform: translateX(35%);
+    }
+    
+    .dropdown li:hover {
+        background-color: rgba(249, 192, 4);
+    }
+    
+}
+
 .navbar{
     font-family: 'Trebuchet MS', sans-serif;
-    position: static;
+    position: relative;
     width: 100%;
     /* background: #FF2872; */
     background: rgba(248, 245, 245, 0.987);

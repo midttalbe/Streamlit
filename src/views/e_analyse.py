@@ -1,5 +1,4 @@
 import streamlit as st
-# from  src.controllers import auth as c_auth
 from src.views.components import side_bar
 from src.controllers.analyse import Analyse
 
@@ -11,7 +10,7 @@ def load_problematique():
 
     Quel est le meilleur moment pour réserver une chambre d'hôtel selon ces 4 angles de vue : 
     1) Le meilleur moment pour être au calme avec le moins d'affluence possible
-    2) Le meilleur moment pour avoir le plus de diversité en terme de pays représenté
+    2) Le meilleur moment pour avoir le plus de diversité en termes de pays représentés
     3) Le meilleur moment pour les voyages selon que l'on séjourne avec des enfants ou sans enfants
     4) Le meilleur moment pour bénéficier d'un sur-classement de type de chambre 
     """)
@@ -192,7 +191,7 @@ def load_view():
             with st.expander("📅 - **1) Le meilleur moment pour être au calme avec le moins d'affluence possible**"):
                 choix_options = ["Par mois et par années - Graphique à Bar",
                                 "Par semestre et par mois toutes années confondus - Boîte à moustache",
-                                "Par rapport au numéro du jour dans le mois par années - Camember",
+                                "Par rapport au numéro du jour dans le mois par années - Camembert",
                                 "Par rapport au jour de la semaine pour toutes les années - Cluster"
                                 ]
                 choix_index = [1,2,3,4]
@@ -209,9 +208,13 @@ d) Fréquentaton par rapport au jour de la semaine
                 choix = st.selectbox("Choisissez votre analyse :",options=choix_options,index=1)
                 
                 if choix == choix_dict[1]:
+
                     year = st.select_slider("Année ?", options=select_slider_list_year,label_visibility="visible",key="slider_analyse_1_1")
+
                     if year == "Toutes années": year = 0
+
                     plt_graph = load_analyse_1_1(a, year)
+
                     st.pyplot(plt_graph)
                     st.markdown("""
                     #### **<u>Méthode de calcul de la fréquentation journaliére :</u>**

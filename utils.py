@@ -17,7 +17,12 @@ def navbar_component():
     component = rf'''
             <nav class="container navbar" id="navbar">
                 <ul class="navlist">
-                {navbar_items}
+                    <!-- USING CHECKBOX HACK -->
+                    <input type="checkbox" id="checkbox_toggle" />
+                    <label for="checkbox_toggle" class="hamburger">&#9776;</label>
+                    <div class="menu">
+                        {navbar_items}
+                    </div>
                 </ul>
             </nav>
             '''
