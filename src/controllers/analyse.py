@@ -6,7 +6,7 @@ import seaborn as sns
 import numpy as np
 import squarify as sqry
 from matplotlib.lines import Line2D
-
+import streamlit as st
 
 class Analyse():
 

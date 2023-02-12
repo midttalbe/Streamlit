@@ -61,6 +61,7 @@ def load_pourquoi_python():
 
 def load_view(username = ""):
     col_a,col_b,col_c = st.columns([1,4,1])
+
     with col_b:
         side_bar.load_sidebar()
         
