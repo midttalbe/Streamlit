@@ -26,8 +26,8 @@ def load_bienvenue():
     Si vous avez des remarques ou autres suggestions concernant ce site ou bien pour me proposer des offres de missions, je suis joignable : 
 
     <ul>
-        <li>via email : <a href= "mailto:mohamed.idttalbe@outlook.fr" >mohamed.idttalbe@outlook.fr</a></li>
-        <li>via ma page LinkedIn : ?</li>
+        <li>Par Email : <a href= "mailto:mohamed.idttalbe@outlook.fr" >mohamed.idttalbe@outlook.fr</a></li>
+        <li>Via LinkedIn : <a class="badge-base__link LI-simple-link" href="https://fr.linkedin.com/in/mohamed-idttalbe-450471223?trk=profile-badge">Mohamed Idttalbe</a></li>
     </ul>
 
     Je vous souhaite bonne lecture 🙂.
