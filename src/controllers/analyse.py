@@ -18,9 +18,9 @@ class Analyse():
     def load(self,forced:bool=False):
         self.datalake.load(forced)
 
-    def read(self):
+    def read(self,transform:bool=True):
         self.df_dict = self.datalake.getDataframe()
-        self.global_transform()
+        if transform: self.global_transform()
 
     def getDF(self):
         return self.df_dict["df"]

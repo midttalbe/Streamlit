@@ -24,19 +24,26 @@ def load_view():
 
         st.subheader("Présentation des 5 premières lignes du dataset :")
         # df = pd.read_csv(r'C:\Backup\Documents_PERSO\Formations_Datarockstars\Projet DATA\DATA\hotel_bookings\hotel_bookings.csv')
+        st.markdown("""<br>""",unsafe_allow_html=True)
         a = Analyse()
-        a.read()
-        df = a.getDF().loc[:,"booking_id":"reservation_status_date"]
+        a.read(False)
+        df = a.getDF() #.loc[:,"booking_id":"reservation_status_date"]
+        # Insertion d'un identifiant unique pour chaque ligne de réservation
+        df.insert(0,'booking_id',df.reset_index().index + 1)
+        
         st.table(df.head(5))
 
-        col_list  = df.columns.to_list()[1:]
+        col_list  = df.columns.to_list()
+        col_list.sort()
         st.subheader("Veuillez selectionner une colonne du jeu de données pour afficher sa distribution")
+        st.markdown("""<br>""",unsafe_allow_html=True)
         option = st.selectbox('Veuillez selectionner une colonne pour afficher la distribution', col_list,label_visibility="collapsed")
         map_mois = {"January":["Janvier",1], "February":["Février",2], "March":["Mars",3], "April":["Avril",4], "May":["Mai",5], "June":["Juin",6]
                 ,"July":["Juillet",7], "August":["Août",8], "September":["Septembre",9], "October":["Octobre",10], "November":["Novembre",11], "December":["Décembre",12]}
 
+        
         if option == "hotel":
-            st.subheader("Distribution des types d'hotel : ")
+            st.write("""<h4><strong>Distribution des types d'hotel : </h4></strong""",unsafe_allow_html=True)
             # fig = plt.figure(figsize=(3,3))
             df_graph = df['hotel'].value_counts().rename("Type d'hôtel")
             st.bar_chart(df_graph)
