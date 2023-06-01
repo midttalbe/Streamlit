@@ -9,9 +9,14 @@ def load_sidebar():
 
     utl.inject_custom_css()
 
+    mode = "DEMO"
 
     image = Image.open("src/images/image_booking.jpg")
-    username = c_auth.getUserName().capitalize()
+    
+    if mode == "DEMO":
+        username = "DEMO MODE"
+    else:
+        username = c_auth.getUserName().capitalize()
 
     # st.markdown("""<div align="center" >""",unsafe_allow_html=True)
     st.image(image, channels="RGB", output_format="auto",use_column_width=True)

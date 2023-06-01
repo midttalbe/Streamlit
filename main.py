@@ -35,12 +35,17 @@ def _max_width_():
 
 def navigation():
 
+    mode = "DEMO"
+
     if c_auth.isAuthenticated():
         # redirect("/b_home", reload=True)
         route = get_route()
 
         if route == '/b_home':
-            username = c_auth.getUserName()
+            if mode == "DEMO":
+                username = "DEMO MODE"
+            else:
+                username = c_auth.getUserName()
             home.load_view(username)
 
         elif route == '/c_objectif':
@@ -56,8 +61,11 @@ def navigation():
             conclusions.load_view()
 
         elif route == '/logout':
-            c_auth.deconnexion()
-            redirect("/a_login",reload=True)
+            if mode == "DEMO":
+                home.load_view()
+            else:
+                c_auth.deconnexion()
+                redirect("/a_login",reload=True)
         else:
             home.load_view()
 

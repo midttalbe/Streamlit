@@ -129,6 +129,8 @@ def load_view():
 
     image = Image.open("src/images/image_booking.jpg")
 
+    mode = "DEMO"
+
     # Login
     col8, col7, col6 = st.columns([1,4,1])
     with col8:
@@ -137,7 +139,8 @@ def load_view():
     with col7:
         _max_width_()
         load_login_form(image)
-        load_signin_form()        
+        if not mode == "DEMO":
+            load_signin_form()        
                 
     with col6:
         st.empty()
