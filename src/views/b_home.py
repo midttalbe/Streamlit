@@ -8,7 +8,7 @@ def load_bienvenue():
     st.subheader("Qui suis-je ?")
     st.markdown("""
     <p>
-    Je m'appelle <b>Mohamed IDTTALBE</b>, 42 ans et j'ai plus de 15 d'expériences dans le domaine informatique.
+    <b>Mohamed IDTTALBE</b>, j'ai plus de 15 d'expériences dans le domaine informatique.
 
     Je suis spécialisé dans les systèmes de bases de données et dans le language SQL.
 
