@@ -4,7 +4,7 @@ NAVBAR_PATHS = {
     '📄 JEU DE DONNEES': 'd_presentation', #'dataset',
     '🔎 ANALYSE': 'e_analyse', #'analysis',
     '📕 CONCLUSION': 'f_conclusions',#, 'conclusion',
-    '🚪 DECONNEXION':'logout'
+    #'🚪 DECONNEXION':'logout'
 
 }
 # SETTINGS = {

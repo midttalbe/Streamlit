@@ -103,31 +103,34 @@ input[type=checkbox]{
 .navbar{
     font-family: 'Trebuchet MS', sans-serif;
     position: relative;
-    width: 100%;
+    width: 71%;
     /* background: #FF2872; */
     background: rgba(248, 245, 245, 0.987);
     z-index: 99999999999999999999;
-    left: 0rem;
-    top: 0rem;
-    height: 55px;
+    left:14%;
+    right:14%;
+    height: 60px;
+
 }
 
 .navitem{
     float: left;
-    display: block;
-    color: #0d0d0e !important;
+    /*display: block;*/
+    color:black !important;
     text-align: center;
     padding: 20px 15px;
     text-decoration: none !important;
     /* border: 2px solid white; */
     border-bottom: 2px solide transparent;
-    font-size: 14px;
+    font-size: 17px;
     font-family: 'Trebuchet MS', sans-serif;
 }
 
 .navitem:hover{
     background-color: rgb(249, 192, 4);
     height: 55px !important;
+    color: white !important;
+    
 }
 
 
